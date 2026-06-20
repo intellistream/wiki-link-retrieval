@@ -1,0 +1,140 @@
+{
+  "timestamp": "2026-06-20T22:06:53",
+  "doc_count": 631,
+  "graph_metrics": {
+    "nodes": 14,
+    "edges": 63,
+    "avg_degree": 4.5,
+    "max_degree": 7,
+    "max_in_degree": 9,
+    "connected_components": 1,
+    "largest_component": 14,
+    "orphan_pages": 0,
+    "category_distribution": {
+      "resources": 3,
+      "achievements": 1,
+      "tech-notes": 5,
+      "tutorials": 3,
+      "industry-docs": 1,
+      "standards": 1
+    }
+  },
+  "ground_truth_count": 34,
+  "query_type_counts": {
+    "cross-project": 4,
+    "factual": 10,
+    "hard": 6,
+    "link-benefiting": 7,
+    "procedural": 7
+  },
+  "baseline": {
+    "3": {
+      "recall_at_k": 0.3014705882352941,
+      "mrr": 0.39215686274509803,
+      "avg_latency_ms": 695.9384852157467
+    },
+    "5": {
+      "recall_at_k": 0.3161764705882353,
+      "mrr": 0.39215686274509803,
+      "avg_latency_ms": 696.2673804065322
+    },
+    "10": {
+      "recall_at_k": 0.34558823529411764,
+      "mrr": 0.39705882352941174,
+      "avg_latency_ms": 697.128846679869
+    }
+  },
+  "link_expanded_default": {
+    "3": {
+      "recall_at_k": 0.3014705882352941,
+      "mrr": 0.39215686274509803,
+      "avg_latency_ms": 697.4768276045592
+    },
+    "5": {
+      "recall_at_k": 0.3161764705882353,
+      "mrr": 0.39215686274509803,
+      "avg_latency_ms": 699.2842606440022
+    },
+    "10": {
+      "recall_at_k": 0.34558823529411764,
+      "mrr": 0.39705882352941174,
+      "avg_latency_ms": 697.7551392286414
+    }
+  },
+  "ablation_max_expansion": {
+    "1": {
+      "5": {
+        "recall_at_k": 0.3161764705882353,
+        "mrr": 0.39215686274509803,
+        "avg_latency_ms": 699.5683840770439
+      }
+    },
+    "3": {
+      "5": {
+        "recall_at_k": 0.3161764705882353,
+        "mrr": 0.39215686274509803,
+        "avg_latency_ms": 700.9522748172885
+      }
+    },
+    "5": {
+      "5": {
+        "recall_at_k": 0.3161764705882353,
+        "mrr": 0.39215686274509803,
+        "avg_latency_ms": 700.3703763818039
+      }
+    },
+    "10": {
+      "5": {
+        "recall_at_k": 0.3161764705882353,
+        "mrr": 0.39215686274509803,
+        "avg_latency_ms": 693.6880775508197
+      }
+    }
+  },
+  "ablation_decay_factor": {
+    "0.3": {
+      "5": {
+        "recall_at_k": 0.3161764705882353,
+        "mrr": 0.39215686274509803,
+        "avg_latency_ms": 696.0983310127631
+      }
+    },
+    "0.5": {
+      "5": {
+        "recall_at_k": 0.3161764705882353,
+        "mrr": 0.39215686274509803,
+        "avg_latency_ms": 696.7414245968137
+      }
+    },
+    "0.7": {
+      "5": {
+        "recall_at_k": 0.3161764705882353,
+        "mrr": 0.39215686274509803,
+        "avg_latency_ms": 695.522711122655
+      }
+    },
+    "1.0": {
+      "5": {
+        "recall_at_k": 0.3161764705882353,
+        "mrr": 0.39215686274509803,
+        "avg_latency_ms": 693.6211356660351
+      }
+    }
+  },
+  "ablation_bidirectional": {
+    "outbound_only": {
+      "5": {
+        "recall_at_k": 0.3161764705882353,
+        "mrr": 0.39215686274509803,
+        "avg_latency_ms": 698.0066393084331
+      }
+    },
+    "bidirectional": {
+      "5": {
+        "recall_at_k": 0.3161764705882353,
+        "mrr": 0.39215686274509803,
+        "avg_latency_ms": 697.0106353572405
+      }
+    }
+  }
+}

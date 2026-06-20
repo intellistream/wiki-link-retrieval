@@ -2,6 +2,8 @@
 
 **Lightweight link-graph expansion for curated knowledge bases — a pragmatic alternative to GraphRAG.**
 
+**Target venue:** NeurIPS 2026 RAG Workshop (~Sep) → backup: SIGIR 2027 Short Paper
+
 ## Idea
 
 Most LLM-powered knowledge systems retrieve documents by vector similarity (ANNS),
@@ -55,6 +57,24 @@ community detection, or a graph database.
 | Query cost | ANNS + rerank | ANNS + graph traversal | ANNS + rerank + O(k) dict lookups |
 | Link quality | N/A | Noisy (LLM extraction) | High (human-curated) |
 | Dependencies | Vector DB | Vector DB + Graph DB + LLM | Vector DB only |
+| Auto-sync | N/A | Re-index from scratch | systemd timer + git pull |
+
+## Auto-Sync (CI/CD)
+
+When wiki pages are added or updated in `sage-wiki`, the KB automatically
+absorbs the new knowledge:
+
+```
+sage-wiki push → systemd timer (every 30min)
+                → git pull sage-wiki
+                → ingest_wiki.py (upsert + rebuild link graph)
+                → KB is live with new content
+```
+
+- **Sync script**: `tools/sync_wiki_kb.sh` (in sage-faculty-twin)
+- **Timer**: `sage-faculty-twin-wiki-sync.timer` (systemd, 30-min interval)
+- **Idempotent**: safe to run even if wiki hasn't changed (skips ingest)
+- **Manual trigger**: `bash tools/sync_wiki_kb.sh` for immediate sync
 
 ## Repository Structure
 
@@ -83,9 +103,13 @@ coupled with the existing KB search pipeline.
 
 - [x] Research repo created
 - [x] Initial architecture designed
-- [ ] Wiki ingestion pipeline implemented
-- [ ] Link graph builder implemented
-- [ ] Post-retrieval expansion in search pipeline
-- [ ] Experiment: retrieval quality baseline (vanilla ANNS)
-- [ ] Experiment: retrieval quality with link expansion
-- [ ] Paper draft
+- [x] Wiki ingestion pipeline implemented (`tools/ingest_wiki.py`)
+- [x] Link graph builder implemented (bidirectional adjacency in `knowledge_base.py`)
+- [x] Post-retrieval expansion in search pipeline (local + sagevdb + neuromem)
+- [x] Experiment: retrieval quality baseline (vanilla ANNS)
+- [x] Experiment: retrieval quality with link expansion (Δ=+7% R@5 on hard queries)
+- [x] Ablation studies (decay, max_expansion, direction)
+- [x] GraphRAG baseline comparison (2.2× better Recall, 3.2× better MRR)
+- [x] Paper draft (`paper/wiki-link-retrieval.md`)
+- [ ] Full LLM-based GraphRAG comparison
+- [ ] Scale evaluation to larger corpora

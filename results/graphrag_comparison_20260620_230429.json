@@ -1,0 +1,62 @@
+{
+  "timestamp": "2026-06-20T23:04:29",
+  "graphrag": {
+    "entities": 50,
+    "edges": 328,
+    "no_expansion": {
+      "3": {
+        "recall": 0.2917,
+        "mrr": 0.325,
+        "latency_ms": 0.06
+      },
+      "5": {
+        "recall": 0.3167,
+        "mrr": 0.325,
+        "latency_ms": 0.05
+      },
+      "10": {
+        "recall": 0.3167,
+        "mrr": 0.325,
+        "latency_ms": 0.05
+      }
+    },
+    "1hop_expansion": {
+      "3": {
+        "recall": 0.3,
+        "mrr": 0.2667,
+        "latency_ms": 0.05
+      },
+      "5": {
+        "recall": 0.3417,
+        "mrr": 0.2767,
+        "latency_ms": 0.05
+      },
+      "10": {
+        "recall": 0.375,
+        "mrr": 0.2767,
+        "latency_ms": 0.05
+      }
+    }
+  },
+  "wiki_link": {
+    "nodes": 20,
+    "edges": 88,
+    "bidir_decay03": {
+      "3": {
+        "recall": 0.6667,
+        "mrr": 0.875,
+        "latency_ms": 1.55
+      },
+      "5": {
+        "recall": 0.7417,
+        "mrr": 0.8875,
+        "latency_ms": 1.63
+      },
+      "10": {
+        "recall": 0.8333,
+        "mrr": 0.8875,
+        "latency_ms": 1.46
+      }
+    }
+  }
+}

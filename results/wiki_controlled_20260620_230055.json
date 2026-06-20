@@ -1,0 +1,129 @@
+{
+  "timestamp": "2026-06-20T23:00:55",
+  "corpus_size": 20,
+  "graph_nodes": 20,
+  "graph_edges": 88,
+  "ground_truth": 20,
+  "type_counts": {
+    "easy": 5,
+    "hard-link": 10,
+    "medium": 5
+  },
+  "main": {
+    "baseline": {
+      "3": {
+        "recall": 0.6667,
+        "mrr": 0.875,
+        "latency_ms": 1.47
+      },
+      "5": {
+        "recall": 0.7167,
+        "mrr": 0.8875,
+        "latency_ms": 1.47
+      },
+      "10": {
+        "recall": 0.8083,
+        "mrr": 0.8875,
+        "latency_ms": 1.47
+      }
+    },
+    "expanded_bidir": {
+      "3": {
+        "recall": 0.6667,
+        "mrr": 0.875,
+        "latency_ms": 1.44
+      },
+      "5": {
+        "recall": 0.7417,
+        "mrr": 0.8875,
+        "latency_ms": 1.44
+      },
+      "10": {
+        "recall": 0.8333,
+        "mrr": 0.8875,
+        "latency_ms": 1.44
+      }
+    }
+  },
+  "type_breakdown": {
+    "easy": {
+      "base": 1.0,
+      "exp": 1.0,
+      "delta": 0.0,
+      "n": 5
+    },
+    "hard-link": {
+      "base": 0.6,
+      "exp": 0.65,
+      "delta": 0.05,
+      "n": 10
+    },
+    "medium": {
+      "base": 0.6667,
+      "exp": 0.6667,
+      "delta": 0.0,
+      "n": 5
+    }
+  },
+  "ablation_max_exp": {
+    "1": {
+      "recall": 0.7417,
+      "mrr": 0.8875,
+      "latency_ms": 1.4
+    },
+    "3": {
+      "recall": 0.7417,
+      "mrr": 0.8875,
+      "latency_ms": 1.43
+    },
+    "5": {
+      "recall": 0.7417,
+      "mrr": 0.8875,
+      "latency_ms": 1.46
+    },
+    "10": {
+      "recall": 0.7417,
+      "mrr": 0.8875,
+      "latency_ms": 1.5
+    }
+  },
+  "ablation_decay": {
+    "0.3": {
+      "recall": 0.7667,
+      "mrr": 0.8875,
+      "latency_ms": 1.42
+    },
+    "0.5": {
+      "recall": 0.7417,
+      "mrr": 0.8875,
+      "latency_ms": 1.42
+    },
+    "0.7": {
+      "recall": 0.7417,
+      "mrr": 0.875,
+      "latency_ms": 1.43
+    },
+    "1.0": {
+      "recall": 0.7167,
+      "mrr": 0.8625,
+      "latency_ms": 1.43
+    }
+  },
+  "ablation_direction": {
+    "outbound-only": {
+      "recall": 0.7417,
+      "mrr": 0.8875,
+      "latency_ms": 1.43
+    },
+    "bidirectional": {
+      "recall": 0.7417,
+      "mrr": 0.8875,
+      "latency_ms": 1.42
+    },
+    "baseline": {
+      "recall": 0.7167,
+      "mrr": 0.8875,
+      "latency_ms": 1.47
+    }
+  }
+}

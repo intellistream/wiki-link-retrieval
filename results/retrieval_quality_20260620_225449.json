@@ -1,0 +1,155 @@
+{
+  "timestamp": "2026-06-20T22:54:49",
+  "doc_count": 635,
+  "backend": "local",
+  "graph_metrics": {
+    "nodes": 18,
+    "edges": 76,
+    "avg_degree": 4.22,
+    "max_degree": 9,
+    "max_in_degree": 9,
+    "connected_components": 2,
+    "largest_component": 14,
+    "orphan_pages": 0,
+    "category_distribution": {
+      "achievements": 1,
+      "tech-notes": 8,
+      "tutorials": 4,
+      "resources": 3,
+      "standards": 1,
+      "industry-docs": 1
+    }
+  },
+  "ground_truth_count": 24,
+  "query_type_counts": {
+    "cross-project": 2,
+    "factual": 8,
+    "hard": 6,
+    "link-benefiting": 4,
+    "procedural": 4
+  },
+  "main_comparison": {
+    "baseline": {
+      "3": {
+        "recall_at_k": 0.2292,
+        "mrr": 0.3333,
+        "avg_latency_ms": 692.39
+      },
+      "5": {
+        "recall_at_k": 0.2292,
+        "mrr": 0.3333,
+        "avg_latency_ms": 691.02
+      },
+      "10": {
+        "recall_at_k": 0.2708,
+        "mrr": 0.3403,
+        "avg_latency_ms": 695.51
+      }
+    },
+    "expanded_default": {
+      "3": {
+        "recall_at_k": 0.2292,
+        "mrr": 0.3333,
+        "avg_latency_ms": 697.91
+      },
+      "5": {
+        "recall_at_k": 0.2292,
+        "mrr": 0.3333,
+        "avg_latency_ms": 692.92
+      },
+      "10": {
+        "recall_at_k": 0.2708,
+        "mrr": 0.3403,
+        "avg_latency_ms": 694.2
+      }
+    }
+  },
+  "query_type_breakdown": {
+    "cross-project": {
+      "baseline_r5": 0.0,
+      "expanded_r5": 0.0,
+      "delta": 0.0,
+      "count": 2
+    },
+    "factual": {
+      "baseline_r5": 0.25,
+      "expanded_r5": 0.25,
+      "delta": 0.0,
+      "count": 8
+    },
+    "hard": {
+      "baseline_r5": 0.0833,
+      "expanded_r5": 0.0833,
+      "delta": 0.0,
+      "count": 6
+    },
+    "link-benefiting": {
+      "baseline_r5": 0.25,
+      "expanded_r5": 0.25,
+      "delta": 0.0,
+      "count": 4
+    },
+    "procedural": {
+      "baseline_r5": 0.5,
+      "expanded_r5": 0.5,
+      "delta": 0.0,
+      "count": 4
+    }
+  },
+  "ablation_max_expansion": {
+    "1": {
+      "recall_at_5": 0.2292,
+      "mrr": 0.3333,
+      "latency_ms": 694.4
+    },
+    "3": {
+      "recall_at_5": 0.2292,
+      "mrr": 0.3333,
+      "latency_ms": 697.57
+    },
+    "5": {
+      "recall_at_5": 0.2292,
+      "mrr": 0.3333,
+      "latency_ms": 695.51
+    },
+    "10": {
+      "recall_at_5": 0.2292,
+      "mrr": 0.3333,
+      "latency_ms": 697.02
+    }
+  },
+  "ablation_decay_factor": {
+    "0.3": {
+      "recall_at_5": 0.2292,
+      "mrr": 0.3333,
+      "latency_ms": 698.23
+    },
+    "0.5": {
+      "recall_at_5": 0.2292,
+      "mrr": 0.3333,
+      "latency_ms": 695.06
+    },
+    "0.7": {
+      "recall_at_5": 0.2292,
+      "mrr": 0.3333,
+      "latency_ms": 705.56
+    },
+    "1.0": {
+      "recall_at_5": 0.2292,
+      "mrr": 0.3333,
+      "latency_ms": 718.18
+    }
+  },
+  "ablation_link_direction": {
+    "outbound-only": {
+      "recall_at_5": 0.2292,
+      "mrr": 0.3333,
+      "latency_ms": 716.79
+    },
+    "bidirectional": {
+      "recall_at_5": 0.2292,
+      "mrr": 0.3333,
+      "latency_ms": 717.67
+    }
+  }
+}
