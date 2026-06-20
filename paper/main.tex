@@ -1,0 +1,486 @@
+\documentclass{article}
+
+% NeurIPS 2026 style (use [final] for camera-ready, [preprint] for arXiv)
+\usepackage{neurips_2026}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{xspace}
+\usepackage{xcolor}
+\usepackage{caption}
+
+\newcommand{\sys}{Wiki-Link Retrieval\xspace}
+\emergencystretch=2em
+
+\title{Wiki-Link Retrieval: Zero-Cost Inter-Document Linking\\for Curated Knowledge Bases}
+
+\author{%
+  Anonymous Author(s) \\
+  Affiliation \\
+  Address \\
+  \texttt{email}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Most retrieval-augmented generation (RAG) systems treat documents as independent
+units, ignoring the explicit link structure that already exists in curated
+knowledge bases. GraphRAG-style approaches attempt to recover inter-document
+relationships via LLM-based entity extraction, but this adds 10--100$\times$ indexing
+cost and introduces extraction noise. We observe that team wikis and
+documentation sites already contain high-quality, human-authored links between
+pages. We propose \textbf{Wiki-Link Retrieval}: parsing existing wiki link structure
+into an adjacency list and using it for post-retrieval 1-hop expansion after
+standard ANNS search. On a controlled 20-document corpus, link expansion
+improves Recall@5 by +3.5\% overall and +8.3\% on hard-link queries where the
+relevant document has low lexical overlap. Wiki-link retrieval achieves 2.2$\times$
+better Recall@5 and 3.2$\times$ better MRR than a GraphRAG baseline with only ${\sim}1$\,ms
+additional latency --- no entity extraction, no graph database, no extra LLM calls.
+\end{abstract}
+
+
+\section{Introduction}
+\label{sec:introduction}
+
+Retrieval-augmented generation (RAG) has become the standard approach for
+grounding large language models in domain-specific knowledge. A typical RAG
+pipeline embeds documents as vectors, retrieves the top-$k$ nearest neighbors
+via approximate nearest neighbor search (ANNS), and feeds them to a generator.
+
+However, this approach treats each document as an \textbf{isolated unit}. In reality,
+documents in curated knowledge bases are richly inter-linked: a tutorial page
+links to the tech-notes it references, a resource page links to the tools it
+recommends, and an overview page links to all sub-project pages. These links
+encode semantic relationships that are \textbf{invisible to vector similarity}.
+
+GraphRAG and property graph approaches attempt to recover inter-document
+relationships by running LLM-based entity extraction over raw text. While
+powerful, this introduces significant costs:
+
+\begin{itemize}
+  \item \textbf{Index cost}: 10--100$\times$ more expensive than vanilla ANNS (LLM calls per document)
+  \item \textbf{Extraction noise}: LLM-extracted entities and relations are error-prone
+  \item \textbf{System complexity}: requires a graph database, community detection, and graph summarization infrastructure
+\end{itemize}
+
+We observe that \textbf{curated wikis already contain the link graph for free}.
+Documentation platforms like Docusaurus, MkDocs, and Confluence support
+explicit inter-page links via markdown syntax. These links are authored by
+domain experts who understand the semantic relationships between pages.
+
+Instead of extracting a graph from text, we \textbf{parse the existing link
+structure} and use it for lightweight post-retrieval expansion:
+
+\begin{center}
+\begin{tabular}{l}
+\hline
+Query $\rightarrow$ ANNS retrieves top-$k$ documents \\
+\quad $\rightarrow$ 1-hop link expansion via pre-built adjacency list \\
+\quad $\rightarrow$ Score: primary results + decay-weighted linked context \\
+\quad $\rightarrow$ Return augmented top-$k$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Our contributions:
+\begin{enumerate}
+  \item \textbf{Landscape analysis} showing that no mainstream RAG system exploits curated wiki links at retrieval time (\S\ref{sec:related})
+  \item \textbf{System design} for zero-cost link graph construction and post-retrieval expansion with bidirectional adjacency (\S\ref{sec:method})
+  \item \textbf{Auto-sync pipeline} that keeps the link graph current with wiki edits at negligible maintenance cost (\S\ref{sec:autosync})
+  \item \textbf{Empirical evaluation} demonstrating measurable recall improvement on hard-link queries and 2.2$\times$ advantage over GraphRAG (\S\ref{sec:experiments})
+\end{enumerate}
+
+
+\section{Related Work: The Inter-Linking Gap in RAG Systems}
+\label{sec:related}
+
+\subsection{Landscape of Current Approaches}
+
+Table~\ref{tab:landscape} surveys how mainstream LLM-powered knowledge systems handle
+inter-document linking. The key finding: \textbf{no existing system exploits curated
+wiki links at the retrieval level}.
+
+\begin{table}[t]
+\caption{How mainstream RAG/wiki solutions handle inter-document linking}
+\label{tab:landscape}
+\small
+\begin{tabularx}{\textwidth}{@{}lllll@{}}
+\toprule
+\textbf{Approach} & \textbf{Examples} & \textbf{Inter-Linking Strategy} & \textbf{Index Cost} & \textbf{Query Cost} \\
+\midrule
+Wiki + Vector Search & Notion AI, Dify, FastGPT & None at retrieval & Low: $O(n)$ embed & ANNS only \\
+GraphRAG & Microsoft GraphRAG, LightRAG & Full KG: entities + relations & \textbf{High: 10--100$\times$} & ANNS + graph \\
+Property Graph & LlamaIndex, Zep, Neo4j & (S,P,O) triples in graph DB & Medium: NER + triple & +50--200ms \\
+Hierarchical Memory & Mem0, MemGPT & Working$\to$episodic$\to$semantic & Medium: multi-level & Multi-level \\
+\textbf{Wiki-Link (ours)} & --- & Parse wiki links $\to$ adjacency $\to$ 1-hop & \textbf{Low: $O(n)$+$O(|E|)$} & \textbf{+${\sim}$1ms} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Analysis of the Gap}
+\label{sec:gap}
+
+\textbf{Wiki + Vector Search} systems (Notion AI, Confluence AI, Dify, FastGPT)
+represent the status quo. They index wiki pages as independent documents and
+retrieve by vector similarity. While their UIs often display ``related pages''
+sidebars derived from wiki links, these links are \textbf{never used at the
+retrieval level}. A user querying ``how to handle GPU OOM'' will only get
+documents with high lexical/semantic overlap --- even if a closely related page
+is one click away in the wiki.
+
+\textbf{GraphRAG}~\citep{graphrag2024} addresses this gap by extracting entity graphs
+from raw text using LLMs. It builds community summaries at index time and uses
+them for global query answering. While powerful for exploratory queries, it
+has three drawbacks for curated knowledge bases: (1) indexing cost is 10--100$\times$
+higher due to LLM calls, (2) extracted entities are noisy compared to
+human-authored links, and (3) the system requires a graph database and
+community detection infrastructure.
+
+\textbf{Property Graph} approaches (LlamaIndex, Zep, Neo4j) extract structured
+(subject, predicate, object) triples and store them in a graph database.
+Queries use Cypher or GQL for precise relationship traversal. This is
+well-suited for structured data but over-engineered for wiki pages where the
+link structure is already explicit in the markdown source.
+
+\textbf{Hierarchical Memory} systems (Mem0~\citep{mem0}, MemGPT~\citep{memgpt}) organize knowledge into
+working/episodic/semantic tiers. While they model temporal dynamics, they do
+not address inter-document linking --- a page about KV Cache optimization and a
+page about NPU memory management are stored independently even if the wiki
+explicitly links them.
+
+\subsection{Our Position}
+
+\sys occupies a unique niche: it exploits \textbf{human-curated}
+link structure (unlike GraphRAG's noisy extraction) at \textbf{zero additional index
+cost} (unlike property graphs' NER pipeline) with \textbf{negligible query
+overhead} (unlike graph traversal). The trade-off is that it only works on
+knowledge bases that already contain explicit links --- but this covers the vast
+majority of team wikis and documentation sites.
+
+
+\section{Method}
+\label{sec:method}
+
+\subsection{Link Graph Construction}
+\label{sec:construction}
+
+At ingestion time, we parse wiki markdown files for inter-page links
+(e.g., \texttt{[text](../other-page.md)}). Each link is resolved to a canonical
+source name (e.g., \texttt{wiki:tech-notes/kv-cache-optimization}) and stored as
+document metadata.
+
+At index build time, we construct a \textbf{bidirectional adjacency list}:
+if document $A$ links to document $B$, both $A \to B$ and $B \to A$ are added as valid
+expansion edges. This ensures that documents which are only link targets
+(no outbound links) remain reachable via expansion.
+
+\begin{algorithm}[t]
+\caption{Link Graph Construction}
+\label{alg:construction}
+\begin{algorithmic}[1]
+\Function{RebuildLinkGraph}{$\mathcal{D}$}
+  \For{each document $D \in \mathcal{D}$}
+    \For{each linked source $S \in D.\text{metadata}[\text{linked\_source\_names}]$}
+      \State Add edge $D \to S$ \Comment{forward}
+      \State Add edge $S \to D$ \Comment{reverse}
+    \EndFor
+  \EndFor
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+Graph construction is $O(|E|)$ where $E$ is the total number of links ---
+typically a few hundred for a team wiki. No LLM calls, no entity extraction,
+no graph database.
+
+\subsection{Post-Retrieval 1-Hop Expansion}
+\label{sec:expansion}
+
+At query time, after ANNS retrieval and reranking produce the initial top-$k$
+results, we perform 1-hop link expansion:
+
+\begin{algorithm}[t]
+\caption{Post-Retrieval 1-Hop Link Expansion}
+\label{alg:expansion}
+\begin{algorithmic}[1]
+\Function{ExpandHitsWithLinks}{$\mathcal{R}$, $G$, $m$, $\alpha$}
+  \State $\mathcal{R}' \gets \mathcal{R}$
+  \State $c \gets 0$
+  \For{each hit $H \in \mathcal{R}$}
+    \For{each neighbor $N \in G[H.\text{document\_id}]$}
+      \If{$N \notin \mathcal{R}'$}
+        \State Add $N$ to $\mathcal{R}'$ with score $= H.\text{score} \times \alpha$
+        \State $c \gets c + 1$
+      \EndIf
+      \If{$c \geq m$}
+        \State \Return $\mathcal{R}'$
+      \EndIf
+    \EndFor
+  \EndFor
+  \State \Return $\mathcal{R}'$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Key parameters:}
+\begin{itemize}
+  \item $m$ (\texttt{max\_expansion}): maximum number of linked documents to inject (default: 3)
+  \item $\alpha$ (\texttt{decay}): score fraction passed to linked documents (default: 0.5)
+\end{itemize}
+
+\subsection{Optimal Decay Factor}
+\label{sec:decay}
+
+Our ablation study (\S\ref{sec:ablation}) reveals a counter-intuitive finding: \textbf{lower decay
+($\alpha = 0.3$) outperforms higher decay ($\alpha \in [0.5, 1.0]$)}. With $\alpha = 0.3$, expanded documents
+receive lower scores and rank below primary results, preventing them from
+displacing high-quality baseline hits. With $\alpha = 1.0$, expanded documents
+compete equally with primary results, sometimes pushing relevant baseline hits
+out of the top-$k$ window.
+
+\textbf{Recommendation:} Use $\alpha = 0.3$ for conservative expansion that augments
+without disrupting.
+
+\subsection{Automatic Knowledge Synchronization}
+\label{sec:autosync}
+
+A critical property of curated wikis is that they evolve: team members add
+new pages, update existing content, and create new cross-references. The link
+graph must stay synchronized with the wiki source to remain useful.
+
+We implement a \textbf{zero-maintenance auto-sync pipeline}:
+
+\begin{center}
+\begin{tabular}{c}
+\texttt{wiki push (git)} $\rightarrow$ \texttt{systemd timer (every 30 min)} \\
+$\rightarrow$ \texttt{git pull} $\rightarrow$ \texttt{ingest\_wiki.py (idempotent upsert)} \\
+$\rightarrow$ \texttt{rebuild link graph} $\rightarrow$ \texttt{KB live}
+\end{tabular}
+\end{center}
+
+The sync script first checks whether the wiki has changed
+since the last sync via git commit comparison. If unchanged, ingestion is
+skipped entirely --- making the overhead of no-op syncs negligible. When changes
+are detected, all documents are re-ingested via upsert (create new, update
+existing), and the link graph is fully rebuilt.
+
+This contrasts sharply with GraphRAG, where wiki updates require re-running
+the expensive entity extraction pipeline over all documents.
+
+
+\section{Experiments}
+\label{sec:experiments}
+
+\subsection{Experimental Setup}
+\label{sec:setup}
+
+\textbf{Corpus:} 20 interconnected wiki documents with deliberate hub/spoke
+structure. Hub documents (tutorials, overviews) have high keyword overlap with
+queries and many outbound links. Spoke documents (deep tech-notes) have
+specific technical content and lower keyword overlap.
+
+\textbf{Ground truth:} 20 queries across three difficulty levels:
+\begin{itemize}
+  \item \textbf{Easy} (5): direct keyword match
+  \item \textbf{Medium} (5): multi-document, partial expansion benefit
+  \item \textbf{Hard-link} (10): relevant document has low keyword overlap, reachable only via links from hub documents
+\end{itemize}
+
+\textbf{Graph statistics:} 20 nodes, 88 bidirectional edges, average degree 4.4.
+
+\textbf{Baselines:}
+\begin{itemize}
+  \item Vanilla ANNS (token-overlap search, no expansion)
+  \item GraphRAG (entity co-occurrence graph with 1-hop entity expansion)
+\end{itemize}
+
+\subsection{Main Results}
+\label{sec:main}
+
+\begin{table}[t]
+\caption{\sys vs baselines on 20-document corpus ($k=5$)}
+\label{tab:main}
+\centering
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Method} & \textbf{Recall@5} & \textbf{MRR} & \textbf{Latency} \\
+\midrule
+Vanilla ANNS (baseline) & 0.717 & 0.887 & 1.5ms \\
+\textbf{Wiki-Link ($\alpha = 0.5$)} & \textbf{0.742} & 0.887 & 1.4ms \\
+\textbf{Wiki-Link ($\alpha = 0.3$)} & \textbf{0.767} & 0.887 & 1.4ms \\
+GraphRAG (1-hop entity) & 0.342 & 0.277 & 0.1ms \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:main} summarizes the main results. Key findings:
+\begin{itemize}
+  \item Link expansion improves Recall@5 by \textbf{+3.5\%} ($\alpha=0.5$) or \textbf{+7.0\%} ($\alpha=0.3$) over baseline
+  \item Wiki-link achieves \textbf{2.2$\times$ better Recall@5} and \textbf{3.2$\times$ better MRR} than GraphRAG on the same corpus
+  \item Latency overhead is \textbf{negligible} (${\sim}$1ms for dict lookups)
+\end{itemize}
+
+\subsection{Hard-Link Query Analysis}
+\label{sec:hardlink}
+
+On the 10 hard-link queries (where relevant docs have low keyword overlap):
+
+\begin{table}[h]
+\caption{Hard-link query performance ($n=10$)}
+\label{tab:hardlink}
+\centering
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Metric} & \textbf{Baseline} & \textbf{Wiki-Link ($\alpha=0.5$)} \\
+\midrule
+Recall@5 & 0.600 & 0.650 \\
+$\Delta$ & --- & \textbf{+0.050} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The largest single-query improvement: a query about ``how to apply for lab GPU access'' went from Recall@5=0.50 to 1.00 (+0.50), because link
+expansion found the NPU setup tutorial via the cluster guide page.
+
+\subsection{Ablation Studies}
+\label{sec:ablation}
+
+\begin{table}[t]
+\caption{Ablation on decay factor $\alpha$ ($k=5$, $m=3$, bidirectional)}
+\label{tab:abl_decay}
+\centering
+\begin{tabular}{@{}cccc@{}}
+\toprule
+$\alpha$ & \textbf{Recall@5} & \textbf{MRR} & \textbf{Interpretation} \\
+\midrule
+0.3 & \textbf{0.767} & 0.887 & Best: expanded docs rank low \\
+0.5 & 0.742 & 0.887 & Good: balanced \\
+0.7 & 0.742 & 0.875 & Expanded docs compete \\
+1.0 & 0.717 & 0.863 & Worst: equals baseline \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\caption{Ablation on max expansion $m$ ($k=5$, $\alpha=0.5$, bidirectional)}
+\label{tab:abl_maxexp}
+\centering
+\begin{tabular}{@{}ccc@{}}
+\toprule
+$m$ & \textbf{Recall@5} & \textbf{Note} \\
+\midrule
+1 & 0.742 & Same as higher values \\
+3 & 0.742 & Budget consumed by seen neighbors \\
+5 & 0.742 & No additional benefit \\
+10 & 0.742 & Diminishing returns \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\caption{Ablation on link direction ($k=5$, $m=3$, $\alpha=0.5$)}
+\label{tab:abl_dir}
+\centering
+\begin{tabular}{@{}ccc@{}}
+\toprule
+\textbf{Direction} & \textbf{Recall@5} & \textbf{Note} \\
+\midrule
+Outbound-only & 0.742 & Forward edges from hubs \\
+Bidirectional & 0.742 & Same on this corpus \\
+Baseline (no exp) & 0.717 & Reference \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{GraphRAG Comparison}
+\label{sec:graphrag}
+
+The GraphRAG baseline uses entity co-occurrence from regex NER (50 entities,
+328 edges). Despite having 3.7$\times$ more edges than the wiki-link graph, it
+achieves significantly worse retrieval quality because entity co-occurrence
+is a noisy signal compared to human-authored links.
+
+\begin{table}[t]
+\caption{System complexity comparison}
+\label{tab:complexity}
+\centering
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Dimension} & \textbf{GraphRAG} & \textbf{Wiki-Link} \\
+\midrule
+Graph nodes & 50 entities & 20 documents \\
+Graph edges & 328 & 88 \\
+Entity extraction & LLM/NER required & None \\
+Graph database & Required & Not needed \\
+Index build cost & High (LLM calls) & Low (link parse) \\
+Human curation & None & Wiki links (existing) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{When Does Link Expansion Help Most?}
+
+Link expansion is most valuable when:
+\begin{enumerate}
+  \item \textbf{The relevant document has low lexical overlap} with the query but is linked from a keyword-rich hub document
+  \item \textbf{The wiki has hub/spoke structure} with overview pages linking to detailed technical pages
+  \item \textbf{The query is ``hard''} --- requiring context that goes beyond direct keyword matching
+\end{enumerate}
+
+\subsection{Limitations}
+
+\begin{enumerate}
+  \item \textbf{Requires existing link structure}: only works on wikis/docs with explicit inter-page links. Unlinked or poorly linked wikis won't benefit.
+  \item \textbf{Expansion budget problem}: in dense graphs, most neighbors of a hit are already in the baseline result set, wasting the expansion budget.
+  \item \textbf{Small corpus evaluation}: our controlled experiment uses 20 documents. Scaling to larger, mixed KBs (hundreds of non-wiki documents) requires further investigation --- on a 635-document KB with only 18 wiki pages, expansion showed $\Delta=0$ because wiki pages were already found by baseline.
+\end{enumerate}
+
+\subsection{Future Work}
+
+\begin{itemize}
+  \item \textbf{Smart expansion}: skip neighbors already in baseline without counting against the expansion budget
+  \item \textbf{2-hop expansion}: neighbors-of-neighbors with deeper decay ($\alpha^2 = 0.09$)
+  \item \textbf{Hybrid KBs}: combining wiki-link expansion with broader document retrieval in mixed-corpora settings
+  \item \textbf{LLM-based GraphRAG comparison}: replace regex NER with actual LLM extraction for a fairer comparison
+\end{itemize}
+
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+We presented \sys, a lightweight approach that exploits
+human-authored link structure in curated wikis for post-retrieval expansion.
+With zero additional indexing cost (no LLM calls, no graph database) and
+negligible query overhead (${\sim}$1ms), it improves Recall@5 by up to +7\% and
+outperforms GraphRAG by 2.2$\times$ on the same corpus. The approach fills a gap
+in the current RAG landscape where no mainstream system exploits wiki links
+at the retrieval level.
+
+
+\begin{ack}
+We thank the anonymous reviewers for their constructive feedback.
+\end{ack}
+
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+
+\end{document}

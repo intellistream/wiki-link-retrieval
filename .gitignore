@@ -5,3 +5,14 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+
+# tectonic build cache
+paper/.tectonic-cache/
+.tools/tectonic/
+
+# paper build artifacts
+paper/*.aux
+paper/*.log
+paper/*.bbl
+paper/*.blg
+paper/*.out
