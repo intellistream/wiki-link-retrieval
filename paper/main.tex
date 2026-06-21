@@ -7,6 +7,8 @@
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{tabularx}
+\usepackage{array}
+\usepackage{adjustbox}
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{algorithm}
@@ -16,11 +18,10 @@
 \usepackage{caption}
 \usepackage{microtype}
 \usepackage{enumitem}
-\usepackage{tikz}
-\usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit, calc, decorations.pathreplacing}
 
 \newcommand{\sys}{Wiki-Link Retrieval\xspace}
-\emergencystretch=2em
+\emergencystretch=3em
+\tolerance=200
 
 %% SIGIR anonymization
 \settopmatter{printacmref=false,printccs=true,printfolios=true}
@@ -122,38 +123,7 @@ wiki-link hop from a top-ranked result.
 
 \begin{figure}[t]
 \centering
-\begin{tikzpicture}[
-  doc/.style={draw, rounded corners=2pt, fill=blue!8, minimum width=2.8cm, minimum height=0.7cm, align=center, font=\scriptsize\sffamily},
-  gold/.style={draw, rounded corners=2pt, fill=green!15, minimum width=2.8cm, minimum height=0.7cm, align=center, font=\scriptsize\sffamily},
-  miss/.style={draw, rounded corners=2pt, fill=red!8, minimum width=2.8cm, minimum height=0.7cm, align=center, font=\scriptsize\sffamily, dashed},
-  query/.style={draw, fill=orange!20, rounded corners=2pt, minimum width=3.2cm, minimum height=0.7cm, align=center, font=\scriptsize\sffamily\bfseries},
-  arr/.style={-Stealth, thick},
-  link/.style={-Stealth, dashed, thick, color=green!60!black},
-  label/.style={font=\scriptsize\sffamily, align=center},
-]
-% Query node
-\node[query] (q) {\textbf{Query}: ``The director of\\Identity (2003) also directed\\what 1997 film?''};
-
-% Left: BM25 only
-\node[doc, below left=1.0cm and 0.3cm of q] (d1) {Identity (film)\\{\tiny BM25 score: 12.4}};
-\node[doc, below=0.15cm of d1] (d2) {John Cusack\\{\tiny BM25 score: 8.1}};
-\node[doc, below=0.15cm of d2] (d3) {Mangold, James\\{\tiny BM25 score: 3.2}};
-\node[miss, below=0.15cm of d3] (gold) {James Mangold\\{\tiny \textbf{Gold doc} (missed)}};
-
-\draw[arr] (q.south west) -- (d1.north);
-\node[label, above=0.1cm of d1] {\textbf{(a) BM25 only}};
-
-% Right: BM25 + wiki-link
-\node[doc, below right=1.0cm and 0.3cm of q] (e1) {Identity (film)\\{\tiny BM25 score: 12.4}};
-\node[doc, below=0.15cm of e1] (e2) {John Cusack\\{\tiny BM25 score: 8.1}};
-\node[doc, below=0.15cm of e2] (e3) {Mangold, James\\{\tiny BM25 score: 3.2}};
-\node[gold, below=0.15cm of e3] (eg) {James Mangold\\{\tiny \textbf{Gold doc} (recovered!)}};
-
-\draw[arr] (q.south east) -- (e1.north);
-\draw[link] (e1.east) -- ++(0.5,0) |- (eg.east) node[pos=0.25, right, font=\tiny\sffamily, color=green!60!black] {wiki-link};
-\node[label, above=0.1cm of e1] {\textbf{(b) BM25 + \sys}};
-
-\end{tikzpicture}
+\includegraphics[width=\columnwidth]{figures/fig1_motivation.pdf}
 \caption{Motivating example. (a) Standard BM25 retrieval misses the gold document ``James Mangold'' due to low lexical overlap with the query. (b) \sys recovers it via a 1-hop wiki-link from the top-ranked ``Identity (film)'' article.}
 \label{fig:motivation}
 \end{figure}
@@ -214,33 +184,7 @@ documents into the result set at query time.
 
 \begin{figure}[t]
 \centering
-\begin{tikzpicture}[
-  block/.style={draw, rounded corners=3pt, fill=blue!8, minimum height=0.7cm, align=center, font=\scriptsize\sffamily},
-  store/.style={draw, rounded corners=3pt, fill=yellow!15, minimum height=0.7cm, align=center, font=\scriptsize\sffamily},
-  arr/.style={-Stealth, thick},
-  phase/.style={font=\tiny\sffamily\itshape, color=gray},
-  node distance=0.6cm and 0.8cm,
-]
-% Offline phase
-\node[block] (wiki) {Wiki Pages\\{\tiny (.md files)}};
-\node[block, right=of wiki] (parser) {Link Parser\\{\tiny regex + resolve}};
-\node[store, right=of parser] (graph) {Adjacency List\\{\tiny $G = (V, E)$ bidirectional}};
-\draw[arr] (wiki) -- (parser);
-\draw[arr] (parser) -- (graph);
-\node[phase, above=0.1cm of parser] {offline};
-
-% Online phase
-\node[block, below=1.1cm of wiki] (query) {User Query};
-\node[block, right=of query] (retriever) {BM25 Retriever\\{\tiny top-$k$ hits}};
-\node[block, right=of retriever] (expand) {1-Hop Expansion\\{\tiny $\alpha \cdot$ score}};
-\node[store, right=of expand] (result) {Augmented\\Result Set};
-\draw[arr] (query) -- (retriever);
-\draw[arr] (retriever) -- (expand);
-\draw[arr] (expand) -- (result);
-\draw[arr] (graph.south) -- ++(0,-0.35) -| (expand.north);
-\node[phase, below=0.1cm of retriever] {online};
-
-\end{tikzpicture}
+\includegraphics[width=\columnwidth]{figures/fig2_architecture.pdf}
 \caption{System architecture. \textbf{Offline}: wiki pages are parsed for inter-page links; a bidirectional adjacency list is built in $O(|E|)$ time with no LLM calls. \textbf{Online}: after first-stage retrieval, linked neighbors are injected into the result set with decay-weighted scores in ${\sim}$1\,ms.}
 \label{fig:architecture}
 \end{figure}
@@ -382,24 +326,7 @@ because the film title matches the query terms.  However, the gold answer
 
 \begin{figure}[t]
 \centering
-\begin{tikzpicture}[
-  doc/.style={draw, rounded corners=2pt, fill=blue!8, minimum height=0.5cm,
-              minimum width=1.8cm, align=center, font=\tiny\sffamily},
-  gold/.style={draw, rounded corners=2pt, fill=green!15, minimum height=0.5cm,
-               minimum width=1.8cm, align=center, font=\tiny\sffamily},
-  arr/.style={-Stealth, thick, color=blue!60!black},
-  lbl/.style={font=\tiny, fill=white, inner sep=1pt},
-  node distance=0.7cm and 1.2cm,
-]
-\node[doc] (id) {Identity (film)};
-\node[gold, right=of id] (jm) {James Mangold};
-\node[doc, below right=0.6cm and 0.1cm of jm] (cww) {Cop Land};
-\node[doc, below left=0.6cm and 0.1cm of id] (cast) {John Cusack};
-
-\draw[arr] (id) -- node[lbl, above] {director} (jm);
-\draw[arr] (jm) -- node[lbl, right] {filmography} (cww);
-\draw[arr] (id) -- node[lbl, left] {cast} (cast);
-\end{tikzpicture}
+\includegraphics[width=0.85\columnwidth]{figures/fig3_example.pdf}
 \caption{Link graph fragment for the query \emph{``Director of Identity (2003)
 also directed what 1997 film?''}  BM25 retrieves \texttt{Identity (film)}
 (blue).  Wiki-link expansion follows the ``director'' edge to inject
@@ -501,6 +428,7 @@ four research questions:
 \caption{Dataset statistics. \#Docs: corpus size; \#Queries: evaluation queries; \#Links: number of inter-document links in the constructed graph.}
 \label{tab:datasets}
 \centering
+\adjustbox{max width=\columnwidth}{
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
 \textbf{Dataset} & \textbf{\#Docs} & \textbf{\#Queries} & \textbf{\#Links} & \textbf{Task} \\
@@ -512,7 +440,7 @@ BEIR-SciFact & 5.1K & 300 & --- & Fact verification \\
 HotpotQA~\citep{yang2018hotpotqa} & 5.2M & 7,405 & 324K & Multi-hop QA \\
 2WikiMultiHop~\citep{ho2020twikimultihop} & 3.0M & 12,576 & 393K & Multi-hop QA \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \noindent\textit{$^*$Estimated from pilot extraction on a 100K-document subset, scaled to full corpus.}
@@ -568,9 +496,10 @@ We run all experiments with 5 random seeds and report mean $\pm$ std.
 \label{sec:msmarco}
 
 \begin{table}[t]
-\caption{Results on HotPotQA (BM25 first-stage, 5 seeds). \sys applied as post-retrieval expansion. $\dagger$ denotes statistically significant improvement over the corresponding baseline ($p < 0.001$). See Table~\ref{tab:graphrag_quality} for GraphRAG/LightRAG comparison on a controlled corpus.}
+\caption{Results on HotPotQA (BM25, 5 seeds). $\dagger$: $p < 0.001$ vs.\ baseline.}
 \label{tab:msmarco}
 \centering
+\adjustbox{max width=\columnwidth}{
 \begin{tabular}{@{}lccc@{}}
 \toprule
 \textbf{Method} & \textbf{nDCG@10} & \textbf{Recall@100} & \textbf{MRR@10} \\
@@ -583,7 +512,7 @@ BM25 & 0.3556 & 0.7528 & 0.4599 \\
 DPR & 0.5223 & 0.7690 & 0.6542 \\
 \quad + \sys ($\alpha=0.3$, $m\!=\!3$) & 0.3352 & 0.7970 & 0.2925 \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 Table~\ref{tab:msmarco} presents the main results on HotPotQA with varying
@@ -620,6 +549,7 @@ interpretability, so \sys's zero-cost precision gains apply directly.
 ``---'' indicates experiments not yet completed.}
 \label{tab:beir}
 \centering
+\adjustbox{max width=\columnwidth}{
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 \textbf{Method} & \textbf{NQ} & \textbf{TriviaQA} & \textbf{SciFact} & \textbf{TREC-COVID} \\
@@ -629,7 +559,7 @@ BM25 & 0.446 & 0.592 & 0.679 & 0.658 \\
 DPR & 0.729 & 0.793 & 0.649 & 0.666 \\
 \quad + \sys & --- & --- & --- & --- \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \subsubsection{Link Density Analysis}
@@ -707,9 +637,10 @@ transfer hypothesis.
 \label{sec:multihop}
 
 \begin{table}[t]
-\caption{Results on multi-hop QA benchmarks. \sys expansion is particularly effective for queries requiring multi-document reasoning. $\dagger$ denotes $p < 0.05$.}
+\caption{Multi-hop QA results. $\dagger$: $p < 0.05$.}
 \label{tab:multihop}
 \centering
+\adjustbox{max width=\columnwidth}{
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 \textbf{Method} & \multicolumn{2}{c}{\textbf{HotpotQA}} & \multicolumn{2}{c}{\textbf{2WikiMultiHopQA}} \\
@@ -723,7 +654,7 @@ DPR & 0.5223 & 0.7690 & --- & --- \\
 ColBERT$^*$ & 0.0531 & 0.0510 & --- & --- \\
 \quad + \sys & 0.0438 & 0.0560 & --- & --- \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \vspace{2pt}
 \raggedright\scriptsize $^*$ColBERT uses vanilla BERT (not a trained ColBERT checkpoint) due to NPU framework constraints; results illustrate the expansion trend for dense late-interaction models.
 \end{table}
@@ -773,9 +704,10 @@ estimates a relevance model weighted by document scores and IDF, and blends
 the expansion terms with the original query (controlled by $\alpha$).
 
 \begin{table}[t]
-\caption{Comparison of \sys with RM3 pseudo-relevance feedback on HotPotQA (BM25 first-stage, 5 seeds). $\dagger$ denotes $p < 0.05$ vs.\ baseline.}
+\caption{\sys vs.\ RM3 on HotPotQA (BM25, 5 seeds). $\dagger$: $p < 0.05$.}
 \label{tab:rm3}
 \centering
+\adjustbox{max width=\columnwidth}{
 \begin{tabular}{@{}lccc@{}}
 \toprule
 \textbf{Method} & \textbf{nDCG@10} & \textbf{Recall@100} & \textbf{MRR@10} \\
@@ -785,7 +717,7 @@ RM3 ($\alpha\!=\!0.5$) & 0.2511 & 0.7563 & 0.3052 \\
 RM3 + \sys             & 0.2791 & 0.8588 & 0.3232 \\
 \sys ($\alpha\!=\!0.3$, $m\!=\!3$) & \textbf{0.3729}$^\dagger$ & \textbf{0.8700} & 0.4112 \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 Table~\ref{tab:rm3} shows a sharp contrast between query expansion and
@@ -817,6 +749,7 @@ provide no further benefit and may even introduce noise.
 \caption{System complexity comparison.}
 \label{tab:complexity}
 \centering
+\adjustbox{max width=\columnwidth}{
 \begin{tabular}{@{}lccc@{}}
 \toprule
 \textbf{Dimension} & \textbf{GraphRAG} & \textbf{LightRAG} & \textbf{Wiki-Link} \\
@@ -827,13 +760,14 @@ Graph database & Required & Required & Not needed \\
 Human curation & None & None & Wiki links (existing) \\
 Query overhead & +graph traversal & +graph traversal & \textbf{+${\sim}$1ms} \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \begin{table}[t]
-\caption{Small-scale retrieval quality comparison on a 20-document wiki corpus (24 queries, BM25 first-stage). Recall@$k$ is evaluated for the top-$k$ retrieved results. GraphRAG expansion uses 1-hop entity neighbors from the LLM-extracted knowledge graph.}
+\caption{Retrieval quality on a 20-doc wiki corpus (24 queries, BM25). GraphRAG uses 1-hop entity neighbors.}
 \label{tab:graphrag_quality}
 \centering
+\adjustbox{max width=\columnwidth}{
 \begin{tabular}{@{}lccc@{}}
 \toprule
 \textbf{Method} & \textbf{Recall@10} & \textbf{MRR} & \textbf{Latency} \\
@@ -842,7 +776,7 @@ BM25 baseline & 0.3167 & 0.3250 & --- \\
 + GraphRAG 1-hop & 0.3750 & 0.2767 & +0.05ms \\
 + \sys ($\alpha\!=\!0.3$) & \textbf{0.8333} & \textbf{0.8875} & +1.5ms \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 Table~\ref{tab:complexity} compares \sys with graph-augmented RAG approaches
@@ -929,25 +863,26 @@ To understand \emph{why} link expansion helps, we inspect individual
 HotPotQA queries and trace the expansion paths.
 
 \begin{table}[t]
-\caption{Case study: example HotPotQA queries showing wiki-link expansion paths.  ``Retrieved'' is the top-ranked BM25 hit; ``Expanded'' is the linked gold document injected by \sys; ``Link'' is the Wikipedia article from which the expansion edge originates.}
+\caption{Case study: wiki-link expansion paths on HotPotQA queries.}
 \label{tab:casestudy}
-\small
-\begin{tabularx}{\columnwidth}{@{}lllX@{}}
+\scriptsize
+\hfuzz=15pt
+\begin{tabularx}{\columnwidth}{@{}>{\raggedright}p{0.24\columnwidth}>{\raggedright}p{0.13\columnwidth}>{\raggedright}p{0.12\columnwidth}>{\raggedright\arraybackslash}X@{}}
 \toprule
-\textbf{Query (abbreviated)} & \textbf{Retrieved} & \textbf{Expanded} & \textbf{Why it works} \\
+\textbf{Query} & \textbf{Top hit} & \textbf{Expanded} & \textbf{Why it works} \\
 \midrule
 ``Director of Identity (2003) also directed what 1997 film?''
   & Identity (film)
   & James Mangold
-  & Query mentions the film, not the director; the film article links to its director. \\
+  & Query mentions the film, not the director; film article links to its director. \\
 ``Country of origin of the band that released OK Computer''
   & OK Computer
-  & Radiohead \& United Kingdom
+  & Radiohead \& UK
   & Album article links to the band, which links to the country. \\
-``Sport played by the character who said `I am Groot''' 
-  & Guardians of the Galaxy
+``Sport played by the character who said `I am Groot'''
+  & Guardians of Galaxy
   & Vin Diesel
-  & Film article links to cast members; the actor page contains the sport reference. \\
+  & Film article links to cast; actor page has the sport reference. \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -1005,60 +940,7 @@ $m$ & \textbf{nDCG@10} & \textbf{Recall@100} & \textbf{MRR@10} \\
 
 \begin{figure}[t]
 \centering
-\begin{tikzpicture}[font=\scriptsize]
-\def\xscale{1.1}
-\def\yscale{3.8}
-\def\xoff{0.8}
-\def\yoff{0.3}
-% Axes
-\draw[thick,-Stealth] (\xoff,\yoff) -- (\xoff + 4*\xscale + 0.3,\yoff)
-  node[right] {$m$};
-\draw[thick,-Stealth] (\xoff,\yoff) -- (\xoff,\yoff + 1.0*\yscale + 0.2);
-% Y-axis labels (nDCG scale: 0.30--0.40)
-\foreach \v/\lbl in {0.30/0.30, 0.325/0.325, 0.35/0.35, 0.375/0.375} {
-  \pgfmathsetmacro\y{\yoff + (\v - 0.30) / 0.075 * 0.7 * \yscale / 1.0}
-  \draw (\xoff - 0.05, \y) -- (\xoff, \y) node[left] {\tiny \lbl};
-  \draw[gray!20] (\xoff, \y) -- (\xoff + 4*\xscale, \y);
-}
-% Y-axis label
-\node[rotate=90, anchor=south, font=\tiny] at (\xoff - 0.55, \yoff + 0.5*\yscale) {nDCG@10};
-% X-axis labels
-\foreach \m/\xpos in {1/1, 3/2, 5/3, 10/4} {
-  \pgfmathsetmacro\x{\xoff + \xpos*\xscale}
-  \draw (\x, \yoff) -- (\x, \yoff - 0.05) node[below] {\tiny $m\!=\!\m$};
-}
-% nDCG@10 line (red, left axis: 0.3735, 0.3642, 0.3524, 0.3244)
-\pgfmathsetmacro\ya{\yoff + (0.3735 - 0.30)/0.075 * 0.7 * \yscale}
-\pgfmathsetmacro\yb{\yoff + (0.3642 - 0.30)/0.075 * 0.7 * \yscale}
-\pgfmathsetmacro\yc{\yoff + (0.3524 - 0.30)/0.075 * 0.7 * \yscale}
-\pgfmathsetmacro\yd{\yoff + (0.3244 - 0.30)/0.075 * 0.7 * \yscale}
-\draw[red!80!black, thick, mark=*, mark size=1.5pt] plot coordinates {
-  (\xoff + 1*\xscale, \ya)
-  (\xoff + 2*\xscale, \yb)
-  (\xoff + 3*\xscale, \yc)
-  (\xoff + 4*\xscale, \yd)
-};
-\node[red!80!black, font=\tiny, anchor=south west] at (\xoff + 1*\xscale + 0.05, \ya + 0.05) {nDCG@10};
-% R@100 line (blue, right axis: 0.8366, 0.8922, 0.9100, 0.9210)
-% Right axis scale: 0.80--0.95
-\def\yoffR{\yoff}
-\foreach \v/\lbl in {0.80/0.80, 0.85/0.85, 0.90/0.90, 0.95/0.95} {
-  \pgfmathsetmacro\y{\yoffR + (\v - 0.80) / 0.15 * 0.7 * \yscale}
-  \draw (\xoff + 4*\xscale, \y) -- (\xoff + 4*\xscale + 0.05, \y) node[right] {\tiny \lbl};
-}
-\node[rotate=-90, anchor=north, font=\tiny] at (\xoff + 4*\xscale + 0.65, \yoff + 0.5*\yscale) {R@100};
-\pgfmathsetmacro\ra{\yoffR + (0.8366 - 0.80)/0.15 * 0.7 * \yscale}
-\pgfmathsetmacro\rb{\yoffR + (0.8922 - 0.80)/0.15 * 0.7 * \yscale}
-\pgfmathsetmacro\rc{\yoffR + (0.9100 - 0.80)/0.15 * 0.7 * \yscale}
-\pgfmathsetmacro\rd{\yoffR + (0.9210 - 0.80)/0.15 * 0.7 * \yscale}
-\draw[blue!80!black, thick, mark=square*, mark size=1.5pt] plot coordinates {
-  (\xoff + 1*\xscale, \ra)
-  (\xoff + 2*\xscale, \rb)
-  (\xoff + 3*\xscale, \rc)
-  (\xoff + 4*\xscale, \rd)
-};
-\node[blue!80!black, font=\tiny, anchor=south east] at (\xoff + 4*\xscale - 0.05, \rd + 0.05) {R@100};
-\end{tikzpicture}
+\includegraphics[width=\columnwidth]{figures/fig4_tradeoff.pdf}
 \caption{Recall--precision tradeoff as expansion budget $m$ increases ($\alpha=0.3$, BM25, HotpotQA). Recall grows monotonically while nDCG@10 degrades, with diminishing returns beyond $m=5$.}
 \label{fig:tradeoff}
 \end{figure}
@@ -1189,6 +1071,7 @@ wiki-link expansion provides a consistent signal above noise.
 \caption{Index build and query latency comparison.}
 \label{tab:latency}
 \centering
+\adjustbox{max width=\columnwidth}{
 \begin{tabular}{@{}lccc@{}}
 \toprule
 \textbf{Method} & \textbf{Index Build} & \textbf{Query Latency} & \textbf{Graph Size} \\
@@ -1199,7 +1082,7 @@ DPR (baseline) & $O(n)$ embed & ${\sim}$50ms & --- \\
 \quad + \sys & +$O(|E|)$ parse & +${\sim}$1ms & $|V|$ nodes, $|E|$ edges \\
 GraphRAG & $O(n \times \text{LLM})$ & ${\sim}$200ms & 10--100$\times$ larger \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \subsubsection{Measured Wall-Clock Performance}
@@ -1345,15 +1228,15 @@ majority of team wikis and documentation sites.
 \caption{How mainstream RAG/wiki solutions handle inter-document linking.}
 \label{tab:landscape}
 \small
-\begin{tabularx}{\columnwidth}{@{}lllll@{}}
+\begin{tabularx}{\columnwidth}{@{}>{\raggedright}p{0.18\columnwidth}>{\raggedright\arraybackslash}X>{\raggedright}p{0.22\columnwidth}>{\raggedright\arraybackslash}X@{}}
 \toprule
-\textbf{Approach} & \textbf{Examples} & \textbf{Inter-Linking} & \textbf{Index Cost} & \textbf{Query Cost} \\
+\textbf{Approach} & \textbf{Examples} & \textbf{Index Cost} & \textbf{Query Cost} \\
 \midrule
-Wiki + Vector & Notion AI, Dify~\citep{dify}, FastGPT~\citep{fastgpt} & None at retrieval & Low: $O(n)$ embed & ANNS only \\
-GraphRAG & Microsoft~\citep{graphrag2024}, LightRAG~\citep{lighthrag} & Full KG extraction & \textbf{High: 10--100$\times$} & ANNS + graph \\
-Property Graph & LlamaIndex~\citep{llamaindex_propgraph}, Neo4j & (S,P,O) triples & Medium: NER + triple & +50--200ms \\
-Hierarchical & Mem0~\citep{mem0}, MemGPT~\citep{memgpt} & Working$\to$episodic & Medium: multi-level & Multi-level \\
-\textbf{Wiki-Link (ours)} & --- & Parse links $\to$ adj. & \textbf{Low: $O(n)$+$O(|E|)$} & \textbf{+${\sim}$1ms} \\
+Wiki + Vector & Notion AI, Dify, FastGPT & Low: $O(n)$ embed & ANNS only \\
+GraphRAG & Microsoft, LightRAG & \textbf{High: 10--100$\times$} & ANNS + graph \\
+Property Graph & LlamaIndex, Neo4j & Medium: NER + triple & +50--200ms \\
+Hierarchical & Mem0, MemGPT & Medium: multi-level & Multi-level \\
+\textbf{Wiki-Link (ours)} & --- & \textbf{Low: $O(n)$+$O(|E|)$} & \textbf{+${\sim}$1ms} \\
 \bottomrule
 \end{tabularx}
 \end{table}

@@ -1,0 +1,74 @@
+<mxfile host="app.diagrams.net" modified="2026-06-21" agent="drawio" version="24.0.0" type="device">
+  <diagram name="Motivating Example" id="fig-motivation">
+    <mxGraphModel dx="800" dy="600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="800" pageHeight="400" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Query box -->
+        <mxCell id="q1" value="&lt;b&gt;Query&lt;/b&gt;: &quot;The director of Identity (2003)&lt;br&gt;also directed what 1997 film?&quot;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="260" y="20" width="280" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- (a) BM25 only label -->
+        <mxCell id="label_a" value="&lt;b&gt;(a) BM25 only&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="100" y="100" width="120" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- Left: BM25 results -->
+        <mxCell id="d1" value="Identity (film)&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;BM25 score: 12.4&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="130" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="d2" value="John Cusack&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;BM25 score: 8.1&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="180" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="d3" value="Mangold, James&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;BM25 score: 3.2&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="230" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="d_gold_miss" value="James Mangold&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;&lt;b&gt;Gold doc&lt;/b&gt; (missed)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;dashed=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="280" width="200" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow from query to left results -->
+        <mxCell id="arr_q_d1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;" edge="1" source="q1" target="d1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- (b) BM25 + wiki-link label -->
+        <mxCell id="label_b" value="&lt;b&gt;(b) BM25 + Wiki-Link&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="500" y="100" width="180" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- Right: BM25 + wiki-link results -->
+        <mxCell id="e1" value="Identity (film)&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;BM25 score: 12.4&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="480" y="130" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" value="John Cusack&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;BM25 score: 8.1&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="480" y="180" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" value="Mangold, James&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;BM25 score: 3.2&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="480" y="230" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_gold_hit" value="James Mangold&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;&lt;b&gt;Gold doc&lt;/b&gt; (recovered!)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="480" y="280" width="200" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow from query to right results -->
+        <mxCell id="arr_q_e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;" edge="1" source="q1" target="e1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Wiki-link arrow (green dashed) -->
+        <mxCell id="wiki_link" value="wiki-link" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1;dashPattern=8 4;strokeColor=#82b366;strokeWidth=2;fontStyle=2;fontSize=10;fontColor=#82b366;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;labelBackgroundColor=#ffffff;" edge="1" source="e1" target="e_gold_hit" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="720" y="150"/>
+              <mxPoint x="720" y="300"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
