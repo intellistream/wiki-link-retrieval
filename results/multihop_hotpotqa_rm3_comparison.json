@@ -1,0 +1,96 @@
+{
+  "timestamp": "20260621_121422",
+  "config": {
+    "datasets": [
+      "hotpotqa"
+    ],
+    "retrievers": [
+      "bm25"
+    ],
+    "alphas": [
+      0.3
+    ],
+    "max_expansions": [
+      3
+    ],
+    "seeds": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "top_k": 100
+  },
+  "link_graph_stats": {
+    "nodes": 66614,
+    "edges": 324589
+  },
+  "coverage_stats": {},
+  "results": [
+    {
+      "dataset": "hotpotqa",
+      "retriever": "bm25",
+      "method": "baseline",
+      "alpha": 0.0,
+      "max_expansion": 0,
+      "ndcg@10": 0.3476,
+      "ndcg@10_std": 0.0002,
+      "recall@100": 0.7266,
+      "recall@100_std": 0.0003,
+      "mrr@10": 0.4457,
+      "mrr@10_std": 0.0003,
+      "latency_ms": 0.0,
+      "p_value": null,
+      "num_queries": 7405
+    },
+    {
+      "dataset": "hotpotqa",
+      "retriever": "bm25",
+      "method": "rm3",
+      "alpha": 0.0,
+      "max_expansion": 0,
+      "ndcg@10": 0.2511,
+      "ndcg@10_std": 0.0,
+      "recall@100": 0.7563,
+      "recall@100_std": 0.0002,
+      "mrr@10": 0.3052,
+      "mrr@10_std": 0.0001,
+      "latency_ms": 334918.61,
+      "p_value": 4.71569323612598e-12,
+      "num_queries": 7405
+    },
+    {
+      "dataset": "hotpotqa",
+      "retriever": "bm25",
+      "method": "rm3+wiki-link",
+      "alpha": 0.3,
+      "max_expansion": 3,
+      "ndcg@10": 0.2791,
+      "ndcg@10_std": 0.0001,
+      "recall@100": 0.8588,
+      "recall@100_std": 0.0004,
+      "mrr@10": 0.3232,
+      "mrr@10_std": 0.0002,
+      "latency_ms": 5264.95,
+      "p_value": 1.854760873478895e-10,
+      "num_queries": 7405
+    },
+    {
+      "dataset": "hotpotqa",
+      "retriever": "bm25",
+      "method": "wiki-link",
+      "alpha": 0.3,
+      "max_expansion": 3,
+      "ndcg@10": 0.3729,
+      "ndcg@10_std": 0.0003,
+      "recall@100": 0.87,
+      "recall@100_std": 0.0003,
+      "mrr@10": 0.4112,
+      "mrr@10_std": 0.0003,
+      "latency_ms": 4924.74,
+      "p_value": 3.428110227966583e-08,
+      "num_queries": 7405
+    }
+  ]
+}
