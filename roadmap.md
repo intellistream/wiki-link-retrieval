@@ -2,6 +2,116 @@
 
 **Last updated:** 2026-06-21
 
+## Target Venue
+
+| Venue | Deadline | Status | Fit |
+|-------|----------|--------|-----|
+| **SIGIR 2027 Full Paper** | ~Jan 2027 (est.) | **Primary target** | Best — 9-10 pages |
+| NeurIPS 2027 | ~May 2027 (est.) | Stretch | Good — full paper |
+
+## Current State (as of 2026-06-21)
+
+### Completed
+
+- [x] Core idea: parse wiki markdown links -> adjacency list -> post-retrieval 1-hop expansion
+- [x] Implementation: link graph builder + expansion in `sage-faculty-twin/knowledge_base.py`
+- [x] Auto-sync pipeline: systemd timer + `sync_wiki_kb.sh` (zero maintenance)
+- [x] Bidirectional adjacency list construction (20 nodes, 88 edges, avg degree 4.4)
+- [x] **LaTeX converted to ACM sigconf (SIGIR format)**
+- [x] **Related work expanded to 25+ references**
+- [x] **Paper restructured for SIGIR full paper (9-10 pages)**
+- [x] **Experiment scripts created:**
+  - `benchmark_standard_ir.py` (MS MARCO + BEIR)
+  - `benchmark_multihop.py` (HotpotQA + 2WikiMultiHopQA)
+  - `graphrag_baseline.py` (updated with LLM extraction support)
+- [x] `make paper` builds successfully with acmart template
+
+### Remaining Gaps
+
+| # | Gap | Severity | Status |
+|---|-----|----------|--------|
+| G1 | Run experiments on standard benchmarks (fill TBD values) | Critical | Scripts ready, need to run |
+| G2 | Run real LLM-based GraphRAG baseline | Critical | Script ready, need API key |
+| G3 | Statistical significance (multi-seed runs) | Important | Framework in place |
+| G4 | System architecture figure | Nice-to-have | Not started |
+| G5 | Reproducibility package | Nice-to-have | Not started |
+
+## Experiment Plan
+
+### Datasets (standard IR benchmarks)
+
+| Dataset | Type | #Docs | #Queries | Link Source |
+|---------|------|-------|----------|-------------|
+| MS MARCO Passage | Passage ranking | 8.8M | 6,980 | Wikipedia hyperlinks |
+| BEIR (NQ, TriviaQA, SciFact, TREC-COVID) | Zero-shot IR | varies | varies | Wikipedia hyperlinks |
+| HotpotQA | Multi-hop QA | 5.2M | 7,405 | Wikipedia cross-refs |
+| 2WikiMultiHopQA | Multi-hop QA | 3.0M | 12,576 | Wikipedia cross-refs |
+
+### Baselines
+
+- BM25 (pyserini)
+- DPR (sentence-transformers)
+- ColBERT (colbert-ir/colbertv2)
+- GraphRAG (microsoft/graphrag or nano-graphrag)
+- LightRAG
+
+### Metrics
+
+- nDCG@10, Recall@100, MRR@10
+- Paired t-test (p < 0.05), 5 random seeds
+
+### Running Experiments
+
+```bash
+# Install dependencies
+pip install pyserini sentence-transformers pytrec-eval-terrier datasets torch
+
+# Standard IR benchmarks (MS MARCO + BEIR)
+python experiments/benchmark_standard_ir.py \
+    --datasets msmarco nq triviaqa scifact trec-covid \
+    --retrievers bm25 dpr colbert \
+    --alpha 0.3 0.5 \
+    --max-expansion 3 \
+    --seeds 42 43 44 45 46
+
+# Multi-hop QA benchmarks
+python experiments/benchmark_multihop.py \
+    --datasets hotpotqa 2wikimultihop \
+    --retrievers bm25 dpr colbert \
+    --alpha 0.3 0.5 \
+    --max-expansion 3
+
+# GraphRAG comparison (scaffold mode, no API key needed)
+python experiments/graphrag_baseline.py --mode scaffold
+
+# GraphRAG comparison (LLM mode, needs API key)
+python experiments/graphrag_baseline.py \
+    --mode llm --backend graphrag --api-key $OPENAI_API_KEY
+```
+
+## Paper Structure (SIGIR Full Paper)
+
+1. **Introduction** - motivation, contributions
+2. **Related Work** - dense retrieval, graph-augmented RAG, link analysis, positioning
+3. **Method** - link graph construction, 1-hop expansion, decay factor, auto-sync
+4. **Experiments** - MS MARCO, BEIR, HotpotQA, 2WikiMultiHopQA, GraphRAG comparison, ablations
+5. **Discussion** - when expansion helps, limitations, future work
+6. **Conclusion**
+
+## Estimated Remaining Effort
+
+| Task | Est. Hours | Priority |
+|------|-----------|----------|
+| Run experiments + fill TBD values | 20-30h | Must |
+| Update paper with results | 4-6h | Must |
+| Add architecture figure | 2-3h | Should |
+| Internal review | 4-8h | Must |
+| Final polish + submit | 4-6h | Must |
+| **Total** | **34-53h** | — |
+# Wiki-Link Retrieval — Submission Roadmap
+
+**Last updated:** 2026-06-21
+
 ## Venue Timeline
 
 | Venue | Deadline | Status | Fit |

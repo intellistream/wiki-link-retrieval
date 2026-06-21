@@ -1,0 +1,23 @@
+# Wiki-Link Retrieval — Experiment Dependencies
+#
+# Core: always needed
+numpy>=1.24
+scipy>=1.10
+scikit-learn>=1.2
+
+# IR evaluation
+pytrec-eval-terrier>=0.5
+
+# Dataset loading
+datasets>=2.14
+huggingface-hub>=0.20
+
+# Retrievers
+sentence-transformers>=2.2
+torch>=2.0
+
+# GraphRAG comparison (optional, for LLM-based extraction)
+openai>=1.0
+
+# Utilities
+tqdm>=4.65

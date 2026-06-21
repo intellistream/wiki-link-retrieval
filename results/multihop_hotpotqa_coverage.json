@@ -1,0 +1,104 @@
+{
+  "timestamp": "20260621_102631",
+  "config": {
+    "datasets": [
+      "hotpotqa"
+    ],
+    "retrievers": [
+      "bm25"
+    ],
+    "alphas": [
+      0.3
+    ],
+    "max_expansions": [
+      1,
+      3,
+      5
+    ],
+    "seeds": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "top_k": 100
+  },
+  "link_graph_stats": {
+    "nodes": 66614,
+    "edges": 324589
+  },
+  "coverage_stats": {
+    "hotpotqa/bm25": {
+      "total_missed_gold_docs": 94,
+      "reachable_via_1hop_link": 90,
+      "link_coverage": 0.9574468085106383
+    }
+  },
+  "results": [
+    {
+      "dataset": "hotpotqa",
+      "retriever": "bm25",
+      "method": "baseline",
+      "alpha": 0.0,
+      "max_expansion": 0,
+      "ndcg@10": 0.3555,
+      "ndcg@10_std": 0.0009,
+      "recall@100": 0.7665,
+      "recall@100_std": 0.0012,
+      "mrr@10": 0.4681,
+      "mrr@10_std": 0.0015,
+      "latency_ms": 0.0,
+      "p_value": null,
+      "num_queries": 200
+    },
+    {
+      "dataset": "hotpotqa",
+      "retriever": "bm25",
+      "method": "wiki-link",
+      "alpha": 0.3,
+      "max_expansion": 1,
+      "ndcg@10": 0.3831,
+      "ndcg@10_std": 0.0004,
+      "recall@100": 0.856,
+      "recall@100_std": 0.0012,
+      "mrr@10": 0.4385,
+      "mrr@10_std": 0.0012,
+      "latency_ms": 127.95,
+      "p_value": 1.835504801620439e-07,
+      "num_queries": 200
+    },
+    {
+      "dataset": "hotpotqa",
+      "retriever": "bm25",
+      "method": "wiki-link",
+      "alpha": 0.3,
+      "max_expansion": 3,
+      "ndcg@10": 0.3724,
+      "ndcg@10_std": 0.0006,
+      "recall@100": 0.908,
+      "recall@100_std": 0.001,
+      "mrr@10": 0.4131,
+      "mrr@10_std": 0.0008,
+      "latency_ms": 127.92,
+      "p_value": 4.1972391084514507e-07,
+      "num_queries": 200
+    },
+    {
+      "dataset": "hotpotqa",
+      "retriever": "bm25",
+      "method": "wiki-link",
+      "alpha": 0.3,
+      "max_expansion": 5,
+      "ndcg@10": 0.3578,
+      "ndcg@10_std": 0.0006,
+      "recall@100": 0.9145,
+      "recall@100_std": 0.0024,
+      "mrr@10": 0.4031,
+      "mrr@10_std": 0.001,
+      "latency_ms": 127.69,
+      "p_value": 0.001311348207958613,
+      "num_queries": 200
+    }
+  ]
+}

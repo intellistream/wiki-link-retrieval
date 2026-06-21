@@ -1,4 +1,4 @@
-# Wiki-Link Retrieval — NeurIPS 2026 Paper Build
+# Wiki-Link Retrieval — SIGIR 2027 Paper Build
 #
 # Uses tectonic (zero-config LaTeX engine) with local cache.
 # Tectonic binary: .tools/tectonic/tectonic (symlinked from vamos)

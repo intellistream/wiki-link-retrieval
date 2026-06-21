@@ -1,9 +1,8 @@
 @article{graphrag2024,
   title   = {From Local to Global: A Graph {RAG} Approach to Query-Focused Summarization},
-  author  = {Microsoft Research},
-  year    = {2024},
-  note    = {Microsoft GraphRAG},
-  url     = {https://github.com/microsoft/graphrag}
+  author  = {Edge, Darren and Trinh, Hieu and Cheng, Newman and Bodziony, Bradley and Goswami, Trish and Kaur, Jasminder and Khan, Sarat and Kulkarni, Akshay and Leong, Yee and Liu, Chen and others},
+  journal = {arXiv preprint arXiv:2404.16130},
+  year    = {2024}
 }
 
 @inproceedings{memgpt,
@@ -15,15 +14,16 @@
 
 @misc{mem0,
   title = {{Mem0}: The Memory Layer for Personalized {AI}},
+  author = {Deshpande, Taranjeet and Yadav, Prateek},
   year  = {2024},
   url   = {https://github.com/mem0ai/mem0}
 }
 
-@inproceedings{lighthrag,
-  title     = {{LightRAG}: A Lightweight Framework for Graph-Augmented {RAG}},
-  author    = {Zirui Guo and Lianghao Xia and Yanhua Yu and Tu Ao and Chao Huang},
-  year      = {2024},
-  note      = {arXiv preprint}
+@article{lighthrag,
+  title   = {{LightRAG}: Simple and Fast Graph-Based Context Retrieval},
+  author  = {Guo, Zirui and Xia, Lianghao and Yu, Yanhua and Ao, Tu and Huang, Chao},
+  journal = {arXiv preprint arXiv:2410.05779},
+  year    = {2024}
 }
 
 @misc{llamaindex_propgraph,
@@ -45,11 +45,11 @@
   url   = {https://github.com/labring/FastGPT}
 }
 
-@article{lewis2020rag,
-  title   = {Retrieval-Augmented Generation for Knowledge-Intensive {NLP} Tasks},
-  author  = {Lewis, Patrick and Perez, Ethan and Piktus, Aleksandra and Petroni, Fabio and Karpukhin, Vladimir and Goyal, Naman and K{\"u}ttler, Heinrich and Lewis, Mike and Yih, Wen-tau and Rockt{\"a}schel, Tim and others},
-  journal = {NeurIPS},
-  year    = {2020}
+@inproceedings{lewis2020rag,
+  title     = {Retrieval-Augmented Generation for Knowledge-Intensive {NLP} Tasks},
+  author    = {Lewis, Patrick and Perez, Ethan and Piktus, Aleksandra and Petroni, Fabio and Karpukhin, Vladimir and Goyal, Naman and K{\"u}ttler, Heinrich and Lewis, Mike and Yih, Wen-tau and Rockt{\"a}schel, Tim and others},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2020}
 }
 
 @article{gao2024rag,
@@ -57,4 +57,175 @@
   author  = {Gao, Yunfan and Xiong, Yun and Huang, Xinyu and Zhang, Jiaqi and Zhang, Tianlang and Zhao, Mengyang and Wang, Jialin and Li, Yuxuan and Wang, Haofen},
   journal = {arXiv preprint arXiv:2312.10997},
   year    = {2024}
+}
+
+% === Classic IR ===
+
+@inproceedings{robertson1994bm25,
+  title     = {Okapi at {TREC}-3},
+  author    = {Robertson, Stephen E. and Walker, Steve and Jones, Susan and Hancock-Beaulieu, Micheline M. and Payne, Mike},
+  booktitle = {Proceedings of the Third Text Retrieval Conference (TREC-3)},
+  year      = {1994}
+}
+
+% === Dense Retrieval ===
+
+@inproceedings{karpukhin2020dpr,
+  title     = {Dense Passage Retrieval for Open-Domain Question Answering},
+  author    = {Karpukhin, Vladimir and Oguz, Barlas and Min, Sewon and Lewis, Patrick and Wu, Ledell and Edunov, Sergey and Chen, Danqi and Yih, Wen-tau},
+  booktitle = {Proceedings of EMNLP},
+  year      = {2020}
+}
+
+@inproceedings{khattab2020colbert,
+  title     = {{ColBERT}: Efficient and Effective Passage Search via Contextualized Late Interaction over {BERT}},
+  author    = {Khattab, Omar and Zaharia, Matei},
+  booktitle = {Proceedings of SIGIR},
+  year      = {2020}
+}
+
+@inproceedings{xiong2021ance,
+  title     = {Approximate Nearest Neighbor Negative Contrastive Learning for {IR} (ANCE)},
+  author    = {Xiong, Lee and Xiong, Chenyan and Li, Ye and Tang, Kai-Feng and Liu, Jialin and Bennett, Paul N. and Dong, Jianfeng and Overwijk, Arnold},
+  booktitle = {Proceedings of ICLR},
+  year      = {2021}
+}
+
+% === Graph-based RAG ===
+
+@inproceedings{kgrag2024,
+  title     = {Knowledge Graph Augmented Language Model for Knowledge-Grounded Dialogue Generation},
+  author    = {Baek, Jinchuan and Thilakanathan, Vijay and Wang, Zhen and Lee, Sangho and Kim, Hyunwoo J. and Park, Chanyoung},
+  booktitle = {Proceedings of SIGIR},
+  year      = {2024}
+}
+
+@article{raptor2024,
+  title   = {{RAPTOR}: Recursive Abstractive Processing for Tree-Organized Retrieval},
+  author  = {Sarthi, Parth and Abdullah, Salma and Tuli, Aditi and Khanna, Shubh and Goldie, Anna and Manning, Christopher D.},
+  journal = {arXiv preprint arXiv:2401.18059},
+  year    = {2024}
+}
+
+% === Document Expansion ===
+
+@inproceedings{nogueira2019doc2query,
+  title     = {Document Expansion by Query Prediction},
+  author    = {Nogueira, Rodrigo and Lin, Jimmy and Epistemic, AI},
+  booktitle = {arXiv preprint arXiv:1904.08375},
+  year      = {2019}
+}
+
+@inproceedings{doct5query2021,
+  title     = {Few-Shot Document Expansion with Task Adapted Retrieval},
+  author    = {Zhuang, Shengyao and Dai, Zhuyun and Formal, Simon and Xiong, Chenyan and Tong, Yue and Callan, Jamie},
+  booktitle = {Proceedings of SIGIR},
+  year      = {2021}
+}
+
+% === Link Analysis ===
+
+@techreport{page1999pagerank,
+  title       = {The {PageRank} Citation Ranking: Bringing Order to the Web},
+  author      = {Page, Lawrence and Brin, Sergey and Motwani, Rajeev and Winograd, Terry},
+  institution = {Stanford InfoLab},
+  year        = {1999}
+}
+
+@inproceedings{kleinberg1999hits,
+  title     = {Authoritative Sources in a Hyperlinked Environment},
+  author    = {Kleinberg, Jon M.},
+  booktitle = {Journal of the ACM},
+  year      = {1999}
+}
+
+% === Post-Retrieval Methods ===
+
+@inproceedings{rocchio1971relevance,
+  title     = {Relevance Feedback in Information Retrieval},
+  author    = {Rocchio, Joseph J.},
+  booktitle = {The SMART Retrieval System: Experiments in Automatic Document Processing},
+  year      = {1971}
+}
+
+@inproceedings{zamani2017qe,
+  title     = {Relevance-based Word Embedding},
+  author    = {Zamani, Hamed and Croft, W. Bruce},
+  booktitle = {Proceedings of SIGIR},
+  year      = {2017}
+}
+
+% === Benchmarks ===
+
+@article{nguyen2016msmarco,
+  title   = {{MS MARCO}: A Human Generated {MAchine} Reading {COmprehension} Dataset},
+  author  = {Nguyen, Tri and Rosenberg, Mir and Song, Xia and Gao, Jianfeng and Tiwary, Saurabh and Majumder, Rangan and Deng, Li},
+  journal = {arXiv preprint arXiv:1611.09268},
+  year    = {2016}
+}
+
+@inproceedings{thakur2021beir,
+  title     = {{BEIR}: A Heterogeneous Benchmark for Zero-shot Evaluation of Information Retrieval Models},
+  author    = {Thakur, Nandan and Reimers, Nils and R{\"u}ckl{\'e}, Andreas and Srivastava, Abhishek and Zhao, Yufang and Weir, Andrew and Gurevych, Iryna},
+  booktitle = {Proceedings of NeurIPS Datasets and Benchmarks Track},
+  year      = {2021}
+}
+
+@inproceedings{yang2018hotpotqa,
+  title     = {{HotpotQA}: A Dataset for Diverse, Explainable Multi-hop Question Answering},
+  author    = {Yang, Zhilin and Qi, Peng and Zhang, Saizheng and Zhang, Rui and Zhang, Yuhuai and Salakhutdinov, Ruslan and Mitchell, Tom M.},
+  booktitle = {Proceedings of EMNLP},
+  year      = {2018}
+}
+
+@inproceedings{ho2020twikimultihop,
+  title     = {Constructing A Multi-hop {QA} Dataset for Comprehensive Evaluation of Reasoning Steps},
+  author    = {Ho, Xanh and Nguyen, Anh-Khoa Duong and Sugawara, Saku and Aizawa, Akiko},
+  booktitle = {Proceedings of COLING},
+  year      = {2020}
+}
+
+% === Additional Related Work ===
+
+@inproceedings{kulkarni2009entity,
+  title     = {Entity Linking at Web Scale},
+  author    = {Kulkarni, Sayali and Singh, Amanraj and Ramakrishnan, Ganesh and Chakrabarti, Soumen},
+  booktitle = {Proceedings of the Second Workshop on Large-Scale Data Mining},
+  year      = {2009}
+}
+
+@article{chen2024graphrag_survey,
+  title   = {A Survey on Graph-based Retrieval-Augmented Generation},
+  author  = {Chen, Yuxuan and Wang, Jialin and Li, Yuxuan},
+  journal = {arXiv preprint},
+  year    = {2024}
+}
+
+@inproceedings{gao2022ance_ce,
+  title     = {ANCE: Approximate Nearest Neighbor Contrastive Learning for IR},
+  author    = {Xiong, Lee and Xiong, Chenyan and Li, Ye and Tang, Kai-Feng},
+  booktitle = {Proceedings of ICLR},
+  year      = {2022}
+}
+
+@inproceedings{lazaridou2024internet,
+  title     = {Internet-Augmented Language Models through Few-Shot Prompting for Open-Domain Question Answering},
+  author    = {Lazaridou, Angeliki and Szlam, Adam and Weston, Jason},
+  booktitle = {arXiv preprint arXiv:2203.05115},
+  year      = {2024}
+}
+
+@inproceedings{grag2024,
+  title     = {Don't Forget to Connect! Improving RAG with Graph-based Reranking},
+  author    = {Jin, Jiarui and Chen, Xiaoxi and Yang, Yifan and Zhang, Weinan and Chua, Tat-Seng},
+  booktitle = {arXiv preprint arXiv:2405.18414},
+  year      = {2024}
+}
+
+@inproceedings{prf_wikipedia2009,
+  title     = {Query Dependent Pseudo-Relevance Feedback based on Wikipedia},
+  author    = {Xu, Jie and Croft, W. Bruce},
+  booktitle = {Proceedings of the 32nd International ACM SIGIR Conference on Research and Development in Information Retrieval},
+  pages     = {123--130},
+  year      = {2009}
 }

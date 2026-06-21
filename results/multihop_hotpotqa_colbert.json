@@ -1,0 +1,70 @@
+{
+  "timestamp": "20260621_113754",
+  "config": {
+    "datasets": [
+      "hotpotqa"
+    ],
+    "retrievers": [
+      "colbert"
+    ],
+    "alphas": [
+      0.3
+    ],
+    "max_expansions": [
+      3
+    ],
+    "seeds": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "top_k": 100
+  },
+  "link_graph_stats": {
+    "nodes": 66614,
+    "edges": 324589
+  },
+  "coverage_stats": {
+    "hotpotqa/colbert": {
+      "total_missed_gold_docs": 949,
+      "reachable_via_1hop_link": 196,
+      "link_coverage": 0.2065331928345627
+    }
+  },
+  "results": [
+    {
+      "dataset": "hotpotqa",
+      "retriever": "colbert",
+      "method": "baseline",
+      "alpha": 0.0,
+      "max_expansion": 0,
+      "ndcg@10": 0.0531,
+      "ndcg@10_std": 0.0,
+      "recall@100": 0.051,
+      "recall@100_std": 0.0,
+      "mrr@10": 0.0802,
+      "mrr@10_std": 0.0,
+      "latency_ms": 0.0,
+      "p_value": null,
+      "num_queries": 500
+    },
+    {
+      "dataset": "hotpotqa",
+      "retriever": "colbert",
+      "method": "wiki-link",
+      "alpha": 0.3,
+      "max_expansion": 3,
+      "ndcg@10": 0.0438,
+      "ndcg@10_std": 0.0,
+      "recall@100": 0.056,
+      "recall@100_std": 0.0,
+      "mrr@10": 0.0583,
+      "mrr@10_std": 0.0,
+      "latency_ms": 616.96,
+      "p_value": 1.0,
+      "num_queries": 500
+    }
+  ]
+}

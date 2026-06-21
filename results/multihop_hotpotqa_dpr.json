@@ -1,0 +1,64 @@
+{
+  "timestamp": "20260621_112334",
+  "config": {
+    "datasets": [
+      "hotpotqa"
+    ],
+    "retrievers": [
+      "dpr"
+    ],
+    "alphas": [
+      0.3
+    ],
+    "max_expansions": [
+      3
+    ],
+    "seeds": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "top_k": 100
+  },
+  "link_graph_stats": {
+    "nodes": 66614,
+    "edges": 324589
+  },
+  "coverage_stats": {},
+  "results": [
+    {
+      "dataset": "hotpotqa",
+      "retriever": "dpr",
+      "method": "baseline",
+      "alpha": 0.0,
+      "max_expansion": 0,
+      "ndcg@10": 0.5223,
+      "ndcg@10_std": 0.0,
+      "recall@100": 0.769,
+      "recall@100_std": 0.0,
+      "mrr@10": 0.6542,
+      "mrr@10_std": 0.0,
+      "latency_ms": 0.0,
+      "p_value": null,
+      "num_queries": 500
+    },
+    {
+      "dataset": "hotpotqa",
+      "retriever": "dpr",
+      "method": "wiki-link",
+      "alpha": 0.3,
+      "max_expansion": 3,
+      "ndcg@10": 0.3352,
+      "ndcg@10_std": 0.0,
+      "recall@100": 0.797,
+      "recall@100_std": 0.0,
+      "mrr@10": 0.2925,
+      "mrr@10_std": 0.0,
+      "latency_ms": 630.27,
+      "p_value": 1.0,
+      "num_queries": 500
+    }
+  ]
+}

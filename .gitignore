@@ -6,6 +6,9 @@ __pycache__/
 dist/
 build/
 
+# Dataset files (downloaded)
+data/
+
 # tectonic build cache
 paper/.tectonic-cache/
 .tools/tectonic/
