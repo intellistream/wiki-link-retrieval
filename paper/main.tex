@@ -170,6 +170,42 @@ Our contributions:
 \section{Method}
 \label{sec:method}
 
+\subsection*{Problem Formulation}
+Let $\mathcal{D} = \{d_1, d_2, \ldots, d_n\}$ be a corpus of $n$ documents and
+$q$ a user query. A first-stage retriever $f$ maps $(q, \mathcal{D})$ to an
+ordered result set $\mathcal{R} = [(d_{i_1}, s_1), (d_{i_2}, s_2), \ldots,
+(d_{i_k}, s_k)]$ where $s_j = f(q, d_{i_j})$ is the retrieval score.
+
+We define a \emph{link graph} $G = (V, E)$ over the corpus, where $V = \mathcal{D}$
+and $(d_i, d_j) \in E$ iff document $d_i$ contains an explicit hyperlink to $d_j$
+or vice versa.  The neighbor set of a document is
+$\mathcal{N}(d) = \{d' \mid (d, d') \in E\}$.
+
+The goal of post-retrieval expansion is to construct an augmented result set
+$\mathcal{R}' \supseteq \mathcal{R}$ by injecting documents from the 1-hop
+neighborhood of $\mathcal{R}$:
+\[
+  \mathcal{R}' = \mathcal{R} \cup \bigcup_{d \in \mathcal{R}_{\text{top-}k}} \bigl(\mathcal{N}(d) \setminus \mathcal{R}\bigr)
+\]
+subject to a budget constraint $|\mathcal{R}' \setminus \mathcal{R}| \leq m$.
+Each injected document receives a decay-weighted score:
+\[
+  s'(d') = \alpha \cdot s(d), \quad \text{where } d' \in \mathcal{N}(d),\ d \in \mathcal{R}
+\]
+with $\alpha \in (0, 1]$ controlling how strongly expanded documents compete
+against the original ranking.
+
+\textbf{Link coverage.}
+To quantify how much of the ``missing'' relevant information the link graph
+can recover, we define:
+\[
+  C_G(\mathcal{R}, \mathcal{G}_q) = \frac{|\mathcal{N}_1(\mathcal{R}) \cap (\mathcal{G}_q \setminus \mathcal{R})|}{|\mathcal{G}_q \setminus \mathcal{R}|}
+\]
+where $\mathcal{G}_q$ is the set of gold-relevant documents for query $q$ and
+$\mathcal{N}_1(\mathcal{R}) = \bigcup_{d \in \mathcal{R}} \mathcal{N}(d)$ is the
+union of 1-hop neighbors.  $C_G = 1$ means every missed gold document is
+reachable via a single link from the retrieved set.
+
 Figure~\ref{fig:architecture} provides an overview of the \sys pipeline.
 The system operates in two phases: (1)~an \emph{offline} link graph construction
 phase that parses wiki markup into a bidirectional adjacency list, and
@@ -225,7 +261,7 @@ no model inference.  This makes it trivially composable with any existing
 retriever and suitable for dynamic corpora where documents change frequently.
 
 \textbf{1-hop vs.\ multi-hop expansion.}
-A natural extension is to traverse 2 or more hops, potentially recovering
+One might consider traversing 2 or more hops, potentially recovering
 documents farther from the initial hits.  However, each additional hop
 introduces a quadratic blow-up in candidate documents ($O(d^h)$ where $d$
 is the average degree and $h$ is the hop count), while the semantic
@@ -336,6 +372,57 @@ lookups where $\bar{d}$ is the average node degree.  Each lookup is $O(1)$
 via hash-table indexing, giving an overall query overhead of
 $O(k \cdot \bar{d})$ with a small constant---typically ${\sim}$1\,ms
 for $k = 100$ and $\bar{d} \approx 5$.
+
+\textbf{Worked example.}
+Consider the query \emph{``Director of Identity (2003) also directed what
+1997 film?''} and the link graph fragment in Figure~\ref{fig:example}.
+BM25 retrieves \texttt{Identity\_(film)} as its top hit (score $s_1 = 8.2$),
+because the film title matches the query terms.  However, the gold answer
+\texttt{James\_Mangold} has low lexical overlap---it shares no query terms.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  doc/.style={draw, rounded corners=2pt, fill=blue!8, minimum height=0.5cm,
+              minimum width=1.8cm, align=center, font=\tiny\sffamily},
+  gold/.style={draw, rounded corners=2pt, fill=green!15, minimum height=0.5cm,
+               minimum width=1.8cm, align=center, font=\tiny\sffamily},
+  arr/.style={-Stealth, thick, color=blue!60!black},
+  lbl/.style={font=\tiny, fill=white, inner sep=1pt},
+  node distance=0.7cm and 1.2cm,
+]
+\node[doc] (id) {Identity (film)};
+\node[gold, right=of id] (jm) {James Mangold};
+\node[doc, below right=0.6cm and 0.1cm of jm] (cww) {Cop Land};
+\node[doc, below left=0.6cm and 0.1cm of id] (cast) {John Cusack};
+
+\draw[arr] (id) -- node[lbl, above] {director} (jm);
+\draw[arr] (jm) -- node[lbl, right] {filmography} (cww);
+\draw[arr] (id) -- node[lbl, left] {cast} (cast);
+\end{tikzpicture}
+\caption{Link graph fragment for the query \emph{``Director of Identity (2003)
+also directed what 1997 film?''}  BM25 retrieves \texttt{Identity (film)}
+(blue).  Wiki-link expansion follows the ``director'' edge to inject
+\texttt{James Mangold} (green, the gold answer) and then
+\texttt{Cop Land} into the result set.}
+\label{fig:example}
+\end{figure}
+
+With $\alpha = 0.3$ and $m = 3$, Algorithm~\ref{alg:expansion} proceeds as
+follows:
+\begin{enumerate}[leftmargin=*,nosep]
+\item Look up $\mathcal{N}(\texttt{Identity\_(film)}) = \{$\texttt{James\_Mangold},
+      \texttt{John\_Cusack}$\}$ in $G$.
+\item \texttt{James\_Mangold} $\notin \mathcal{R}$: inject with score
+      $0.3 \times 8.2 = 2.46$.
+\item \texttt{John\_Cusack} $\notin \mathcal{R}$: inject with score
+      $0.3 \times 8.2 = 2.46$.
+\item Budget not exhausted ($c = 2 < m = 3$).  Proceed to second hit.
+\end{enumerate}
+The gold answer \texttt{James\_Mangold} now appears in the augmented set
+$\mathcal{R}'$, which would have been missed by BM25 alone.  In the
+HotpotQA evaluation, 92.7\% of missed gold documents are reachable via
+this 1-hop mechanism.
 
 \subsection{Optimal Decay Factor}
 \label{sec:decay}
@@ -520,10 +607,10 @@ with only modest nDCG cost.
 semantic similarity that overlaps with the link graph signal; the injected
 neighbor documents introduce noise into precision-sensitive top ranks.
 
-This finding positions \sys as a \textbf{complementary augmentation for sparse
-retrievers} rather than a universal improvement. In practice, BM25 remains widely
-used in production RAG systems due to its efficiency and interpretability, making
-\sys's zero-cost precision gains particularly valuable.
+\sys works as a \textbf{complementary augmentation for sparse
+retrievers}---not as a universal improvement. BM25 remains the dominant
+first-stage retriever in production RAG systems for its speed and
+interpretability, so \sys's zero-cost precision gains apply directly.
 
 \subsection{Zero-Shot Generalization on BEIR}
 \label{sec:beir}
@@ -546,7 +633,7 @@ DPR & 0.729 & 0.793 & 0.649 & 0.666 \\
 \end{table}
 
 \subsubsection{Link Density Analysis}
-A key factor influencing zero-shot transferability is the \emph{link density}
+Zero-shot transferability depends heavily on the \emph{link density}
 of the target corpus. Wikipedia articles exhibit varying numbers of outgoing
 links depending on topic domain: articles about pop culture and geography
 tend to be highly interlinked (50--80 outgoing links per article), while
@@ -592,7 +679,7 @@ patterns for wiki-link expansion:
 \end{enumerate}
 
 \subsubsection{Comparison with Dense Retriever Transfer}
-A critical question for zero-shot evaluation is whether wiki-link expansion
+One concern for zero-shot transfer is whether wiki-link expansion
 amplifies or mitigates the domain shift problem. Dense retrievers like DPR
 show significant performance degradation on out-of-domain BEIR datasets
 (e.g., DPR trained on MS MARCO drops 20--30 points on SciFact). If wiki-link
@@ -701,7 +788,7 @@ RM3 + \sys             & 0.2791 & 0.8588 & 0.3232 \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:rm3} reveals a striking contrast between query expansion and
+Table~\ref{tab:rm3} shows a sharp contrast between query expansion and
 document expansion strategies.  RM3 \emph{decreases} nDCG@10 by 27.8\%
 ($0.3476 \to 0.2511$, $p < 0.001$) despite improving Recall@100 by 4.1\%.
 This is a well-known failure mode of PRF on multi-hop queries: the expansion
@@ -763,8 +850,7 @@ across system complexity dimensions. Table~\ref{tab:graphrag_quality} presents
 a controlled quality comparison on a small-scale wiki corpus where both
 approaches can be evaluated.
 
-The quality comparison in Table~\ref{tab:graphrag_quality} reveals a striking
-gap: on a 20-document wiki corpus, wiki-link achieves 2.2$\times$ higher
+The quality numbers in Table~\ref{tab:graphrag_quality} show a large gap: on a 20-document wiki corpus, wiki-link achieves 2.2$\times$ higher
 Recall@10 (0.8333 vs.\ 0.3750) and 3.2$\times$ higher MRR (0.8875 vs.\ 0.2767)
 compared to GraphRAG 1-hop expansion. The explanation lies in graph density:
 the LLM-extracted entity graph (50 entities, 328 edges) captures \emph{named
@@ -828,8 +914,8 @@ The choice between wiki-link and graph-augmented RAG depends on the corpus:
 \end{itemize}
 
 \subsubsection{Complementarity}
-An important insight is that wiki-link expansion and graph-augmented RAG are
-not mutually exclusive. A production system could use wiki-link as a
+Wiki-link and graph-augmented RAG are
+not mutually exclusive. A production system could run wiki-link as a
 lightweight first pass (adding semantically related neighbors at ${\sim}$1ms
 per query) and then apply graph-augmented reasoning for complex queries that
 require multi-hop inference or entity resolution. The combination would
@@ -870,7 +956,7 @@ Table~\ref{tab:casestudy} shows three representative success cases.
 In each case, the gold document has \textbf{low lexical overlap} with the
 query---``James Mangold'' shares no query terms---but is reachable via a
 \textbf{semantically meaningful link} from a keyword-matched hub document.
-This is precisely the scenario where sparse retrievers fail and link
+This is exactly where sparse retrievers fail and link
 expansion excels.
 
 \textbf{Failure mode.}  On 2WikiMultiHopQA, expansion sometimes hurts
@@ -917,6 +1003,66 @@ $m$ & \textbf{nDCG@10} & \textbf{Recall@100} & \textbf{MRR@10} \\
 \end{tabular}
 \end{table}
 
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[font=\scriptsize]
+\def\xscale{1.1}
+\def\yscale{3.8}
+\def\xoff{0.8}
+\def\yoff{0.3}
+% Axes
+\draw[thick,-Stealth] (\xoff,\yoff) -- (\xoff + 4*\xscale + 0.3,\yoff)
+  node[right] {$m$};
+\draw[thick,-Stealth] (\xoff,\yoff) -- (\xoff,\yoff + 1.0*\yscale + 0.2);
+% Y-axis labels (nDCG scale: 0.30--0.40)
+\foreach \v/\lbl in {0.30/0.30, 0.325/0.325, 0.35/0.35, 0.375/0.375} {
+  \pgfmathsetmacro\y{\yoff + (\v - 0.30) / 0.075 * 0.7 * \yscale / 1.0}
+  \draw (\xoff - 0.05, \y) -- (\xoff, \y) node[left] {\tiny \lbl};
+  \draw[gray!20] (\xoff, \y) -- (\xoff + 4*\xscale, \y);
+}
+% Y-axis label
+\node[rotate=90, anchor=south, font=\tiny] at (\xoff - 0.55, \yoff + 0.5*\yscale) {nDCG@10};
+% X-axis labels
+\foreach \m/\xpos in {1/1, 3/2, 5/3, 10/4} {
+  \pgfmathsetmacro\x{\xoff + \xpos*\xscale}
+  \draw (\x, \yoff) -- (\x, \yoff - 0.05) node[below] {\tiny $m\!=\!\m$};
+}
+% nDCG@10 line (red, left axis: 0.3735, 0.3642, 0.3524, 0.3244)
+\pgfmathsetmacro\ya{\yoff + (0.3735 - 0.30)/0.075 * 0.7 * \yscale}
+\pgfmathsetmacro\yb{\yoff + (0.3642 - 0.30)/0.075 * 0.7 * \yscale}
+\pgfmathsetmacro\yc{\yoff + (0.3524 - 0.30)/0.075 * 0.7 * \yscale}
+\pgfmathsetmacro\yd{\yoff + (0.3244 - 0.30)/0.075 * 0.7 * \yscale}
+\draw[red!80!black, thick, mark=*, mark size=1.5pt] plot coordinates {
+  (\xoff + 1*\xscale, \ya)
+  (\xoff + 2*\xscale, \yb)
+  (\xoff + 3*\xscale, \yc)
+  (\xoff + 4*\xscale, \yd)
+};
+\node[red!80!black, font=\tiny, anchor=south west] at (\xoff + 1*\xscale + 0.05, \ya + 0.05) {nDCG@10};
+% R@100 line (blue, right axis: 0.8366, 0.8922, 0.9100, 0.9210)
+% Right axis scale: 0.80--0.95
+\def\yoffR{\yoff}
+\foreach \v/\lbl in {0.80/0.80, 0.85/0.85, 0.90/0.90, 0.95/0.95} {
+  \pgfmathsetmacro\y{\yoffR + (\v - 0.80) / 0.15 * 0.7 * \yscale}
+  \draw (\xoff + 4*\xscale, \y) -- (\xoff + 4*\xscale + 0.05, \y) node[right] {\tiny \lbl};
+}
+\node[rotate=-90, anchor=north, font=\tiny] at (\xoff + 4*\xscale + 0.65, \yoff + 0.5*\yscale) {R@100};
+\pgfmathsetmacro\ra{\yoffR + (0.8366 - 0.80)/0.15 * 0.7 * \yscale}
+\pgfmathsetmacro\rb{\yoffR + (0.8922 - 0.80)/0.15 * 0.7 * \yscale}
+\pgfmathsetmacro\rc{\yoffR + (0.9100 - 0.80)/0.15 * 0.7 * \yscale}
+\pgfmathsetmacro\rd{\yoffR + (0.9210 - 0.80)/0.15 * 0.7 * \yscale}
+\draw[blue!80!black, thick, mark=square*, mark size=1.5pt] plot coordinates {
+  (\xoff + 1*\xscale, \ra)
+  (\xoff + 2*\xscale, \rb)
+  (\xoff + 3*\xscale, \rc)
+  (\xoff + 4*\xscale, \rd)
+};
+\node[blue!80!black, font=\tiny, anchor=south east] at (\xoff + 4*\xscale - 0.05, \rd + 0.05) {R@100};
+\end{tikzpicture}
+\caption{Recall--precision tradeoff as expansion budget $m$ increases ($\alpha=0.3$, BM25, HotpotQA). Recall grows monotonically while nDCG@10 degrades, with diminishing returns beyond $m=5$.}
+\label{fig:tradeoff}
+\end{figure}
+
 \begin{table}[t]
 \caption{Ablation on link direction ($m=3$, $\alpha=0.3$). Evaluated on HotpotQA.}
 \label{tab:abl_dir}
@@ -947,7 +1093,7 @@ DPR & $-$0.1871 ($-$35.8\%) & +0.0280 (+3.6\%) \\
 \end{table}
 
 \subsubsection{Decay Factor $\alpha$: Balancing Original and Expanded Rankings}
-Table~\ref{tab:abl_decay} reveals a clear monotonic relationship: lower $\alpha$
+Table~\ref{tab:abl_decay} shows a monotonic pattern: lower $\alpha$
 values produce higher nDCG@10. The optimal $\alpha=0.3$ assigns only 30\% weight
 to the expanded document score, preserving the BM25 original ranking while
 gently promoting linked neighbors. As $\alpha$ increases toward 1.0 (full
@@ -1000,12 +1146,12 @@ article that does not link back), bidirectional traversal recovers relevant
 documents that outbound-only misses.
 
 \subsubsection{Retriever-Type Dependency}
-Table~\ref{tab:abl_retriever} reveals the most architecturally significant finding:
+Table~\ref{tab:abl_retriever} shows the key architectural result:
 \sys is \emph{retriever-type dependent}. BM25 (sparse, term-matching) benefits
 from expansion (+5.0\% nDCG, +22.3\% R@100), while DPR (dense, learned embeddings)
 is harmed ($-$35.8\% nDCG, +3.6\% R@100).
 
-We attribute this asymmetry to \emph{signal overlap}. Dense retrievers like DPR
+The asymmetry comes from \emph{signal overlap}. Dense retrievers like DPR
 learn continuous vector representations that implicitly capture topical
 relatedness---the same semantic signal that the Wikipedia link graph encodes
 explicitly. When wiki-link expansion injects neighbor documents into DPR's
