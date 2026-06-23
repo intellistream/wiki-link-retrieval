@@ -1,0 +1,112 @@
+{
+  "timestamp": "2026-06-23T00:50:20",
+  "corpus": {
+    "total_docs": 639,
+    "wiki_docs": 19,
+    "nonwiki_docs": 620
+  },
+  "config": {
+    "alpha": 0.6,
+    "max_expansion": 8,
+    "k_values": [
+      3,
+      5,
+      10
+    ]
+  },
+  "ground_truth_count": 25,
+  "graph_metrics": {
+    "explicit-only": {
+      "nodes": 22,
+      "edges": 112,
+      "avg_degree": 5.09,
+      "coverage_pct": 3.4,
+      "build_time_ms": 0.4
+    },
+    "+tag-based": {
+      "nodes": 174,
+      "edges": 1802,
+      "avg_degree": 10.36,
+      "coverage_pct": 27.2,
+      "build_time_ms": 35.1
+    },
+    "+concept-kw": {
+      "nodes": 58,
+      "edges": 195,
+      "avg_degree": 3.36,
+      "coverage_pct": 9.1,
+      "build_time_ms": 5.5
+    },
+    "combined": {
+      "nodes": 190,
+      "edges": 1859,
+      "avg_degree": 9.78,
+      "coverage_pct": 29.7,
+      "build_time_ms": 40.7
+    }
+  },
+  "retrieval_by_mode": {
+    "explicit-only": {
+      "R@3": 0.22,
+      "MRR@3": 0.32,
+      "R@5": 0.24,
+      "MRR@5": 0.328,
+      "R@10": 0.28,
+      "MRR@10": 0.3347,
+      "latency_ms": 753.18,
+      "expansion_hits_per_query": 0.1
+    },
+    "+tag-based": {
+      "R@3": 0.22,
+      "MRR@3": 0.32,
+      "R@5": 0.24,
+      "MRR@5": 0.328,
+      "R@10": 0.28,
+      "MRR@10": 0.3347,
+      "latency_ms": 755.3,
+      "expansion_hits_per_query": 0.2
+    },
+    "+concept-kw": {
+      "R@3": 0.22,
+      "MRR@3": 0.32,
+      "R@5": 0.24,
+      "MRR@5": 0.33,
+      "R@10": 0.3,
+      "MRR@10": 0.3367,
+      "latency_ms": 754.45,
+      "expansion_hits_per_query": 0.4
+    },
+    "combined": {
+      "R@3": 0.22,
+      "MRR@3": 0.32,
+      "R@5": 0.24,
+      "MRR@5": 0.33,
+      "R@10": 0.3,
+      "MRR@10": 0.3367,
+      "latency_ms": 753.16,
+      "expansion_hits_per_query": 0.5
+    }
+  },
+  "query_type_breakdown": {
+    "cross-project": {
+      "count": 2,
+      "R@5": 0.0
+    },
+    "factual": {
+      "count": 8,
+      "R@5": 0.25
+    },
+    "hard": {
+      "count": 7,
+      "R@5": 0.1429
+    },
+    "link-benefiting": {
+      "count": 4,
+      "R@5": 0.25
+    },
+    "procedural": {
+      "count": 4,
+      "R@5": 0.5
+    }
+  }
+}
